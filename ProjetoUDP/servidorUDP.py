@@ -37,7 +37,7 @@ while True:
 
 
 
-
+#teste
 arquivo = open("campeoes.txt", "r")
 perguntas = lerArquivo(arquivo)
 arquivo.close()
