@@ -49,7 +49,6 @@ def verificaResp(msg, end):
     else:
         print(f'jogador {end} perdeu tanto ponto\n')
 
-
 #muita coisa abaixo tem que virar função e tbm organizar melhor
 def loop():
     while True:
