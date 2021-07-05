@@ -1,16 +1,18 @@
-import socket
-import threading
+from socket import socket, AF_INET, SOCK_DGRAM
+from threading import Thread
 import time
 
-encerra = False 
-cliente = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+encerra = False
+cliente = socket(AF_INET, SOCK_DGRAM)
+
+print('digite seu nome:\n')
 
 def envia():
-    global encerra #talvez usar POO futuramente
+    global encerra
     while True:
         if encerra:
             break
-        msg = input('digite a msg')
+        msg = input('')
         cliente.sendto(msg.encode(),('localhost',12000))
 
 def recebe():
@@ -18,11 +20,11 @@ def recebe():
         msgBytes, endServidor = cliente.recvfrom(2048)
         print(msgBytes.decode())
 
-#eh preciso ter esse inicio pra o servidor se conectar com o cliente primeiramente
-msg = input('nome do jogador\n') 
+#é preciso ter esse inicio pra o servidor se conectar com cliente primeiramente
+msg = 'Conectado: '#input('nome do jogador\n') 
 cliente.sendto(msg.encode(),('localhost',12000))
 #################
 
-threading.Thread(target=recebe).start()
-threading.Thread(target=envia).start()
+Thread(target=recebe).start()
+Thread(target=envia).start()
 
