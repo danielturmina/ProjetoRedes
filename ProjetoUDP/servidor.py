@@ -16,12 +16,19 @@ class Jogadores:
         self.pontos = 0
         self.end = ''
 
+#inicio da ideia de obj
+def criaObjJogador(end): #cria jogadores a partir do end de cada
+    end = Jogadores()
+  
+
+
+
 jogadores = []
 jogadoresProntos = []
 perguntaSortida = [] 
 comecou = False
-numRodada = 0
-porta = 12000
+#numRodada = 0
+porta = 12000 #necessario, pois caso precise trocar no num de porta, outras funções são afetadas, então o ideal é trocar aqui
 contTempo = 10 #usei dez segundos pra o criterio q o prof pede, além disso é usado tanto pra iniciar um jogo quanto pra tempo de resposta
 #tempoInterrompido = False
 
@@ -78,7 +85,7 @@ def cronometro(): #a diferença desse cronometro pra o outro é que esse avisa s
         servidor.sendto('o jogo começou!'.encode(),('localhost',porta))
         
     #tempoInterrompido = True
-    print('cronometro fechado')
+    print('cronometro fechado')#debug
 
 def cronometro2(): #cronometro mais simples, foi mais facil separar do outro, caso contraio teria muitas condicionais
     
@@ -103,6 +110,8 @@ def inicio(): #o jogo ainda não começou, essa é a fase de esperar novos clien
         if msgBytes == 'Conectado: ':
             if endCliente not in jogadores:
                 jogadores.append(endCliente)
+                criaObjJogador(endCliente)
+                
             enviaTodos([endCliente], 'Digite "start" para começar: \n') #vai enviar só para o que acabou de entrar essa msg (pq é uma lista com um nome só)
 
         print(msgBytes, endCliente) #debugando
@@ -124,7 +133,7 @@ def inicio(): #o jogo ainda não começou, essa é a fase de esperar novos clien
 
 def jogando(): #lembrar de impedir que não conseguiu se conectar de responder (apesar de que as perguntas só são enviadas para os jogadoresProntos)
     print('entrou em jgando') #debug
-    global contTempo, jogadoresProntos, perguntaSortida, numRodada #tempoInterrompido, #tentar resolver se vai ficar co var globais ou objetos
+    global contTempo, jogadoresProntos, perguntaSortida #, numRodada #tempoInterrompido, #tentar resolver se vai ficar co var globais ou objetos
   
     #while numRodada < 5:
     for numRodada in range(5): #cinco rodadas 
@@ -136,7 +145,7 @@ def jogando(): #lembrar de impedir que não conseguiu se conectar de responder (
         while True:  # a ideia é dependendo da resposta (errada/certa), o servidor mande uma msg (atraves da função cronometro2) pra o proprio servidor, e assim esse laço recebe e verifica, se a msg vier do servidor é pq o cronometro chegou a zero, e ai da um break pra passar  pra prox rodada. (+/- uma gambiarra)
             
             msgBytes, endCliente = recebe()
-            print('testando ', msgBytes, ' ', perguntaSortida[numRodada][1])
+            print('testando ', msgBytes, ' ', perguntaSortida[numRodada][1]) #debug
             
             if endCliente[1] == porta:
                 print(' o cronometro zerou e ninguem acertou')
@@ -148,10 +157,7 @@ def jogando(): #lembrar de impedir que não conseguiu se conectar de responder (
                 
             elif msgBytes != perguntaSortida[numRodada ][1]:
                 print('diminuir ponto de quem errou\n')
-        
-        #numRodada += 1
     
     enviaTodos(jogadoresProntos, 'Fim de Jogo - Obrigado!! etc\n') #essa parte ainda não testei mas se não funcionar resolvemos rapido
     
-        
 Thread(target=inicio).start()
