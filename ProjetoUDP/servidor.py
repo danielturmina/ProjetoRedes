@@ -152,5 +152,8 @@ def jogando(): #lembrar de impedir que não conseguiu se conectar de responder (
                 print('diminuir ponto de quem errou\n')
         
         #numRodada += 1
+    
+    enviaTodos(jogadoresProntos, 'Fim de Jogo - Obrigado!! etc\n') #essa parte ainda não testei mas se não funcionar resolvemos rapido
+    
         
 Thread(target=inicio).start()
