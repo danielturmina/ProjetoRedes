@@ -20,11 +20,10 @@ jogadores = []
 jogadoresProntos = []
 perguntaSortida = [] 
 comecou = False
-start = True
 numRodada = 0
 porta = 12000
 contTempo = 10 #usei dez segundos pra o criterio q o prof pede, além disso é usado tanto pra iniciar um jogo quanto pra tempo de resposta
-tempoInterrompido = False
+#tempoInterrompido = False
 
 servidor = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 servidor.bind(('', porta)) 
@@ -63,7 +62,7 @@ def recebe():
 
 def cronometro():
     
-    global contTempo, porta, comecou, tempoInterrompido
+    global contTempo, porta, comecou#, tempoInterrompido
     contTempo = 10 
     somaCont = 0
 
@@ -80,12 +79,25 @@ def cronometro():
     elif (somaCont == 55) and comecou:
         servidor.sendto('o jogo começou!'.encode(),('localhost',porta))
         
-    tempoInterrompido = True
+    #tempoInterrompido = True
     print('cronometro fechado')
 
-#muita coisa abaixo tem que virar função e tbm organizar melhor
-def inicio(): #o jogo ainda não começou
-    global contTempo, porta, comecou, tempoInterrompido
+def cronometro2():
+    
+    global contTempo, porta, comecou #, tempoInterrompido
+    contTempo = 10 
+    somaCont2 = 0
+
+    while contTempo > 0:
+        time.sleep(1)
+        print(contTempo)
+        somaCont2 += contTempo
+        contTempo -= 1  
+    
+    servidor.sendto('o cronometro zerou!'.encode(),('localhost',porta))      
+
+def inicio(): #o jogo ainda não começou, essa é a fase de esperar novos clientes
+    global contTempo, porta, comecou #, tempoInterrompido
 
     while True:
         
@@ -106,44 +118,39 @@ def inicio(): #o jogo ainda não começou
                 Thread(target=cronometro).start() #inicia o contador outra vez, atraves dessa thread é possivel que um jogador interrompa em tempo real o cronometro           
         print(jogadoresProntos) #debug
         
-        if endCliente[1] == porta: #termina essa parte de esperar jogadores e vai iniciar o jogo.
+        if endCliente[1] == porta: #termina essa parte de esperar jogadores e vai iniciar o jogo de fato.
             Thread(target=jogando).start()
-            tempoInterrompido = False
+            #tempoInterrompido = False
             comecou = True
             break
 
 def jogando(): #lembrar de impedir que não conseguiu se conectar de responder (apesar de que as perguntas só são enviadas para os jogadoresProntos)
-    print('entrou em jgando')
-    global contTempo, jogadoresProntos, tempoInterrompido, perguntaSortida, numRodada
+    print('entrou em jgando') #debug
+    global contTempo, jogadoresProntos, tempoInterrompido, perguntaSortida, numRodada #tentar resolver se vai ficar co var globais ou objetos
   
-    while numRodada < 5:
+    #while numRodada < 5:
+    for numRodada in range(5): #cinco rodadas 
 
         enviaTodos(jogadoresProntos, perguntaSortida[numRodada][0])
         time.sleep(1)
-        Thread(target=cronometro).start()
+        Thread(target=cronometro2).start()
 
-        while not tempoInterrompido:
-        
-            #print(perguntaSortida[i][1], i)
+        while True:  # a ideia é dependendo da resposta (errada/certa), o servidor mande uma msg (atraves da função cronometro2) pra o proprio servidor, e assim esse laço recebe e verifica, se a msg vier do servidor é pq o cronometro chegou a zero, e ai da um break pra passar  pra prox rodada. (+/- uma gambiarra)
+            
             msgBytes, endCliente = recebe()
+            print('testando ', msgBytes, ' ', perguntaSortida[numRodada][1])
+            
             if endCliente[1] == porta:
                 print(' o cronometro zerou e ninguem acertou')
                 break
 
-            print('testando ', msgBytes, ' ', perguntaSortida[numRodada][1])
-            if msgBytes == perguntaSortida[numRodada][1]:
+            elif msgBytes == perguntaSortida[numRodada][1]:
                 enviaTodos(jogadoresProntos, 'endCliente acertou\n')
-                contTempo = 0
-                time.sleep(0.5) #tempo pra processamento
+                contTempo = 0 #envia zero para o cronometro parar e enviar msg pra o servidor, a msg chega até laço e acontece o break              
                 
             elif msgBytes != perguntaSortida[numRodada ][1]:
                 print('diminuir ponto de quem errou\n')
         
-        numRodada += 1
-        tempoInterrompido = False
+        #numRodada += 1
         
 Thread(target=inicio).start()
-
-
-
-
