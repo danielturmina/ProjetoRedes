@@ -60,7 +60,7 @@ def recebe():
     msgRecebida = msgRecebida.decode()
     return [msgRecebida, endRecebido]
 
-def cronometro():
+def cronometro(): #a diferença desse cronometro pra o outro é que esse avisa se o cronometro foi interrompido pela metade ou não, se for interrompido ele retorna a zero. se não ele inicia o jogo de fato
     
     global contTempo, porta, comecou#, tempoInterrompido
     contTempo = 10 
@@ -74,15 +74,13 @@ def cronometro():
         somaCont += contTempo
         contTempo -= 1  
 
-    if (somaCont == 55) and (not comecou):
-        servidor.sendto('o jogo começou!'.encode(),('localhost',porta))
-    elif (somaCont == 55) and comecou:
+    if somaCont == 55: #se 
         servidor.sendto('o jogo começou!'.encode(),('localhost',porta))
         
     #tempoInterrompido = True
     print('cronometro fechado')
 
-def cronometro2():
+def cronometro2(): #cronometro mais simples, foi mais facil separar do outro, caso contraio teria muitas condicionais
     
     global contTempo, porta, comecou #, tempoInterrompido
     contTempo = 10 
@@ -126,7 +124,7 @@ def inicio(): #o jogo ainda não começou, essa é a fase de esperar novos clien
 
 def jogando(): #lembrar de impedir que não conseguiu se conectar de responder (apesar de que as perguntas só são enviadas para os jogadoresProntos)
     print('entrou em jgando') #debug
-    global contTempo, jogadoresProntos, tempoInterrompido, perguntaSortida, numRodada #tentar resolver se vai ficar co var globais ou objetos
+    global contTempo, jogadoresProntos, perguntaSortida, numRodada #tempoInterrompido, #tentar resolver se vai ficar co var globais ou objetos
   
     #while numRodada < 5:
     for numRodada in range(5): #cinco rodadas 
