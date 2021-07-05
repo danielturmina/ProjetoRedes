@@ -20,9 +20,6 @@ class Jogadores:
 def criaObjJogador(end): #cria jogadores a partir do end de cada
     end = Jogadores()
   
-
-
-
 jogadores = []
 jogadoresProntos = []
 perguntaSortida = [] 
@@ -52,7 +49,8 @@ arquivo = open('campeoes.txt', "r")
 perguntas = lerArquivo(arquivo)
 arquivo.close()
 
-sorteio = random.sample(range(0,19), 5) 
+sorteio = random.sample(range(0,len(perguntas)), 5) #caso o programa quebre verificar essa linha
+
 for i in sorteio: 
     perguntaSortida.append(perguntas[int(i)]) 
 
@@ -89,7 +87,7 @@ def cronometro(): #a diferença desse cronometro pra o outro é que esse avisa s
 
 def cronometro2(): #cronometro mais simples, foi mais facil separar do outro, caso contraio teria muitas condicionais
     
-    global contTempo, porta, comecou #, tempoInterrompido
+    global contTempo, porta, comecou
     contTempo = 10 
     somaCont2 = 0
 
@@ -102,7 +100,7 @@ def cronometro2(): #cronometro mais simples, foi mais facil separar do outro, ca
     servidor.sendto('o cronometro zerou!'.encode(),('localhost',porta))      
 
 def inicio(): #o jogo ainda não começou, essa é a fase de esperar novos clientes
-    global contTempo, porta, comecou #, tempoInterrompido
+    global contTempo, porta, comecou 
 
     while True:
         
@@ -135,7 +133,6 @@ def jogando(): #lembrar de impedir que não conseguiu se conectar de responder (
     print('entrou em jgando') #debug
     global contTempo, jogadoresProntos, perguntaSortida #, numRodada #tempoInterrompido, #tentar resolver se vai ficar co var globais ou objetos
   
-    #while numRodada < 5:
     for numRodada in range(5): #cinco rodadas 
 
         enviaTodos(jogadoresProntos, perguntaSortida[numRodada][0])
