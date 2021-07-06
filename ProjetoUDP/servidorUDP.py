@@ -1,13 +1,40 @@
+""" 
+● Deverá ser desenvolvido um jogo com competições ​online​ de perguntas e respostas; OK
+● Um protocolo da camada de aplicação deverá ser desenvolvido e especificado no relatório;  ---------- ???
+● Deverá ter pelo menos uma mensagem de requisição e pelo menos uma mensagem de resposta; OK
+● O protocolo de transporte UDP deverá ser utilizado; OK
+● Um servidor UDP deverá gerenciar as competições; OK
+● Até 5 clientes UDP poderão participar de uma competição; OK
+● Após a competição ser iniciada, não deverá ser permitido o ingresso de novos participantes; OK
+● Cada competição terá 5 rodadas de perguntas e respostas; OK
+● O servidor deverá ter um arquivo de texto contendo pelo menos 20 tuplas de perguntas e respostas; OK
+○ As respostas deverão ser compostas por uma única palavra, com caracteres minúsculos; OK
+○ O tema do Quiz ficará a critério da equipe; OK
+● O servidor irá escolher aleatoriamente uma tupla de pergunta/resposta que será utilizada na rodada; OK
+● Uma mesma competição não poderá ter duas tuplas repetidas; OK
+● Cada rodada será encerrada quando algum participante acertar a resposta ou atingir uma duração máxima de 10 segundos; OK
+● Pontuação de cada rodada:
+○ Cada resposta errada: -5 pontos OK
+○ Sem resposta: -1 ponto OK
+○ Resposta correta: 25 pontos OK
+● Após uma competição ser encerrada, um ​ranking​ com a pontuação é divulgado; OK
+● e uma nova competição poderá ser iniciada. ------------------- FALTA IMPLEMENTAR
+"""
+
+#É necessário tratar nomes iguais?
+#É necessário tratar empates?
+
 from socket import socket, AF_INET, SOCK_DGRAM
 from threading import Thread
 import random
 import time
 
+
 jogadores = []
 jogadoresProntos = []
 perguntaSortida = [] 
 comecou = False
-dicNomes = {} #Dicionario de normes que vai ajudar na hora de imprimir os pontos finais
+dicNomes = {} #Dicionario de nomes que vai ajudar na hora de imprimir os pontos finais
 dicPontuacao = {}
 #numRodada = 0
 porta = 12000 
@@ -101,9 +128,12 @@ def inicio():
 
         print(msgBytes, endCliente) #debugando
 
-        if (msgBytes == 'start') and (endCliente not in jogadoresProntos): 
+        if (msgBytes == 'start') and (endCliente not in jogadoresProntos) and (len(jogadoresProntos) == 5): #Enviando mensagem se alguem quiser se conectar e já tiver 5 jogadores prontos
+            enviaTodos([endCliente], 'A quantidade limite de jogadores foi atingida! Tente novamente mais tarde!\n')
+
+        if (msgBytes == 'start') and (endCliente not in jogadoresProntos) and (len(jogadoresProntos) < 5): #Limitando a Participação de 5 Pessoas
             jogadoresProntos.append(endCliente)
-            dicPontuacao[endCliente] = 0
+            dicPontuacao[endCliente] = [None,None,None,None,None]
             enviaTodos([endCliente], 'Sua partida está prestes a começar\n')
             if len(jogadoresProntos) >= 2:
                 contTempo = 0 
@@ -143,19 +173,32 @@ def jogando():
             elif msgBytes[:11] == 'Conectado: ' and (endCliente not in jogadoresProntos) and (comecou == True):   #Jogador NEM tinha entrado, ou seja NEM start apareceu
                 enviaTodos([endCliente], 'Partida já iniciada, volte mais tarde!')    
 
-            elif msgBytes == perguntaSortida[numRodada][1]:#Colocar Sem resposta!!!!!
-                enviaTodos(jogadoresProntos, 'endCliente acertou\n')
-                dicPontuacao[endCliente] += 25
+            elif msgBytes == perguntaSortida[numRodada][1]:      
+                msg1 = str(dicNomes[endCliente])+' acertou\n' #Coloquei para mostrar o nome de quem acertou
+                enviaTodos(jogadoresProntos, msg1)
+                dicPontuacao[endCliente][numRodada] = 25
                 contTempo = 0            
                 
             elif msgBytes != perguntaSortida[numRodada][1]:
-                print('diminuir ponto de quem errou\n')
-                dicPontuacao[endCliente] -= 5
+                if dicPontuacao[endCliente][numRodada] == None:
+                    dicPontuacao[endCliente][numRodada] = 0
+                dicPontuacao[endCliente][numRodada] -= 5
 
     print(dicPontuacao) 
     n = 1
-    for i in sorted(dicPontuacao, key = dicPontuacao.get, reverse=True): #O que fazer em caso de empate? Corrigir
-        msgFinal = str(n)+"° Lugar: "+str(dicNomes[i])+" com "+str(dicPontuacao[i])+" pontos!"
+    dicPontosFinais = {}
+    contPontos = 0
+
+    for i in dicPontuacao:
+        for x in dicPontuacao[i]:
+            if x != None:
+                contPontos += x
+            else:
+                contPontos -=1
+        dicPontosFinais[i] = contPontos    
+        contPontos = 0
+    for i in sorted(dicPontosFinais, key = dicPontosFinais.get, reverse=True): #O que fazer em caso de empate? Corrigir
+        msgFinal = str(n)+"° Lugar: "+str(dicNomes[i])+" com "+str(dicPontosFinais[i])+" pontos!"
         enviaTodos(jogadoresProntos, msgFinal)
         n += 1
     enviaTodos(jogadoresProntos, '\nFim de Jogo - Obrigado!!\n')
