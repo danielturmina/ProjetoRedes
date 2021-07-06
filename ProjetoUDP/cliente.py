@@ -5,7 +5,6 @@ import time
 encerra = False
 cliente = socket(AF_INET, SOCK_DGRAM)
 
-print('digite seu nome:\n') #aparece só uma vez assim que inicia o cliente
 
 def envia():
     global encerra
@@ -20,10 +19,15 @@ def recebe():
         msgBytes, endServidor = cliente.recvfrom(2048)
         print(msgBytes.decode())
 
-#é preciso ter esse inicio pra o servidor se conectar com cliente primeiramente
-msg = 'Conectado: '# manda uma msg automatica assim que inicia o servidor, para que o servidor entendenda que esse usuario conectou
+
+texto = 'Conectado: '
+while True: # Pedindo nome e evitando nomes vazios
+    nome = input('Digite o seu nome: \n')
+    if len(nome) > 0:
+        break 
+msg = texto + nome
 cliente.sendto(msg.encode(),('localhost',12000))
+ 
 
 Thread(target=recebe).start()
 Thread(target=envia).start()
-
