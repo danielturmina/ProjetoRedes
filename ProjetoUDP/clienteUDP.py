@@ -1,34 +1,33 @@
 from socket import socket, AF_INET, SOCK_DGRAM
 from threading import Thread
+import time
 
-sock = socket(AF_INET, SOCK_DGRAM)
+encerra = False
+cliente = socket(AF_INET, SOCK_DGRAM)
 
 
+def envia():
+    global encerra
+    while True:
+        if encerra:
+            break
+        msg = input('')
+        cliente.sendto(msg.encode(),('localhost',12000))
 
-def enviarDados(msg):
-    sock.sendto(msg.encode(), ("localhost",9500))
+def recebe():
+    while True:
+        msgBytes, endServidor = cliente.recvfrom(2048)
+        print(msgBytes.decode())
 
-def receber_dados(sock):
-        while True:
-            dados = sock.recv(2048)
-            print(f"{dados.decode()}")
-            if dados == "Você não poderá participar do Jogo pois a Partida já começou!":
-                sock.close()
-            elif dados == "Você não poderá participar do Jogo pois já atingimos o limite de Participantes!":
-                sock.close()
-            elif dados == "Você não deu start a tempo, a partida já começou":
-                sock.close()
-            else:
-                responder = input()
-                enviarDados(responder)
 
-print("Seja Bem Vindo - Quiz Copa do Mundo")
-nome = ""
+texto = 'Conectado: '
+while True: # Pedindo nome e evitando nomes vazios
+    nome = input('Digite o seu nome: \n')
+    if len(nome) > 0:
+        break 
+msg = texto + nome
+cliente.sendto(msg.encode(),('localhost',12000))
+ 
 
-while len(nome) < 1 :
-    nome = input("\nDigite seu Nome:")
-
-enviarDados(nome)
-
-Thread(target = receber_dados, args=(sock,)).start()
-
+Thread(target=recebe).start()
+Thread(target=envia).start()
