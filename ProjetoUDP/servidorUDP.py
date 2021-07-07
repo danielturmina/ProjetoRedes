@@ -180,6 +180,8 @@ def jogando():
                 contTempo = 0            
                 
             elif msgBytes != perguntaSortida[numRodada][1]:
+                msg2 = "Você errou! Tente novamente...\n" #Mensagem mostrando que errou
+                enviaTodos([endCliente], msg2)
                 if dicPontuacao[endCliente][numRodada] == None:
                     dicPontuacao[endCliente][numRodada] = 0
                 dicPontuacao[endCliente][numRodada] -= 5
