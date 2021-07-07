@@ -92,7 +92,7 @@ def cronometro():
         somaCont += contTempo
         contTempo -= 1  
 
-    if somaCont == 55: #se 
+    if somaCont == 55:
         servidor.sendto('o jogo começou!'.encode(),('localhost',porta))
         
     #tempoInterrompido = True
@@ -124,17 +124,17 @@ def inicio():
                 dicNomes[endCliente] = msgBytes[11:] #Pegando Nome da pessoas
             print(dicNomes)                     
                 
-            enviaTodos([endCliente], 'Digite "start" para começar:')
+            enviaTodos([endCliente], '100')
 
         print(msgBytes, endCliente) #debugando
 
         if (msgBytes == 'start') and (endCliente not in jogadoresProntos) and (len(jogadoresProntos) == 5): #Enviando mensagem se alguem quiser se conectar e já tiver 5 jogadores prontos
-            enviaTodos([endCliente], 'A quantidade limite de jogadores foi atingida! Tente novamente mais tarde!\n')
+            enviaTodos([endCliente], '102')
 
         if (msgBytes == 'start') and (endCliente not in jogadoresProntos) and (len(jogadoresProntos) < 5): #Limitando a Participação de 5 Pessoas
             jogadoresProntos.append(endCliente)
             dicPontuacao[endCliente] = [None,None,None,None,None]
-            enviaTodos([endCliente], 'Sua partida está prestes a começar\n')
+            enviaTodos([endCliente], '101')
             if len(jogadoresProntos) >= 2:
                 contTempo = 0 
                 time.sleep(1) 
@@ -164,24 +164,24 @@ def jogando():
             print('testando ', msgBytes, ' ', perguntaSortida[numRodada][1]) #debug
             
             if endCliente[1] == porta:
-                print(' o cronometro zerou e ninguem acertou')
+                print('o cronometro zerou e ninguem acertou')
                 break
 
             elif (msgBytes == 'start') and (endCliente not in jogadoresProntos) and (comecou == True):   #Jogador tinha entrado, mas não digitou start a tempo
-                enviaTodos([endCliente], 'Infelizmente você não digitou "start" a tempo, a partida já iniciou!')   
+                enviaTodos([endCliente], '103')   
 
             elif msgBytes[:11] == 'Conectado: ' and (endCliente not in jogadoresProntos) and (comecou == True):   #Jogador NEM tinha entrado, ou seja NEM start apareceu
-                enviaTodos([endCliente], 'Partida já iniciada, volte mais tarde!')    
+                enviaTodos([endCliente], '104')    
 
             elif msgBytes == perguntaSortida[numRodada][1]:      
-                msg1 = str(dicNomes[endCliente])+' acertou\n' #Coloquei para mostrar o nome de quem acertou
+                msg1 = 'O jogador: '+str(dicNomes[endCliente])+' acertou!\n' #Coloquei para mostrar o nome de quem acertou
+                enviaTodos([endCliente], '200')   
                 enviaTodos(jogadoresProntos, msg1)
-                dicPontuacao[endCliente][numRodada] = 25
+                dicPontuacao[endCliente][numRodada] += 25
                 contTempo = 0            
                 
             elif msgBytes != perguntaSortida[numRodada][1]:
-                msg2 = "Você errou! Tente novamente...\n" #Mensagem mostrando que errou
-                enviaTodos([endCliente], msg2)
+                enviaTodos([endCliente], '300')#Mensagem mostrando que errou
                 if dicPontuacao[endCliente][numRodada] == None:
                     dicPontuacao[endCliente][numRodada] = 0
                 dicPontuacao[endCliente][numRodada] -= 5
