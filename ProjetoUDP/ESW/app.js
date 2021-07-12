@@ -99,19 +99,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   //teste velocidade
   var segundos = 1000
-  var cont2 = 0
-  function velocidade(mSeg){
-    
-    if (timerId & (cont2 >= 10)) {
-      
-      clearInterval(timerId)
-      draw()
-      segundos -= 200
-      cont2 = 0
-      timerId = setInterval(moveDown, mSeg)
-      
-
-  }}
 
   //freeze function
   function freeze() {
@@ -218,53 +205,21 @@ document.addEventListener('DOMContentLoaded', () => {
       displaySquares[displayIndex + index].classList.add('tetromino')
     })
   }
-
-  //vai aumentando a velocidade do jogo
   
-  /*var miliSegundos = 1000
-  var cont = 10
-  function teste(){
-    moveDown();
-    if (miliSegundos > 400) {
-      if (cont > 0){
-        cont -= 1  
-      } else{
-        cont = (100000)/miliSegundos  //fiz regra de três pra aumentar proporcionalmente e sempre ter o mesmo intervalo
-        miliSegundos -= 100
-        clearInterval(timerId)
-        timerId = setInterval(teste, miliSegundos)
-        console.log(miliSegundos)
-      }
-    }
 
-  }*/
-
-  //setTimeout(setTimeout(myFunction), counter);
-
-  function teste2(){
-    if (segundos > 400) { //eu que coloquei
-      cont2 += 1
-    }
-
-    velocidade(segundos)
-    console.log(segundos)
-    console.log(cont2)
-    
-
-  }
+  
 
   //add functionality to the button
   startBtn.addEventListener('click', () => {
     if (timerId) {
       clearInterval(timerId)
-      clearInterval(timerTeste)
       timerId = null
     } else {
       draw()
       timerId = setInterval(moveDown, segundos) //moveDown, 1000
       //nextRandom = Math.floor(Math.random()*theTetrominoes.length) //problema, sempre que aperta start muda o obj seguinte
       displayShape()
-      timerTeste = setInterval(teste2, 1000)
+      
     }
   })
 
@@ -284,8 +239,18 @@ document.addEventListener('DOMContentLoaded', () => {
         const squaresRemoved = squares.splice(i, width)
         squares = squaresRemoved.concat(squares)
         squares.forEach(cell => grid.appendChild(cell))
+        if ((score%100) === 0){
+          /*clearInterval(timerTeste)
+          timerTeste = setInterval(teste2, 1000)*/
+          segundos -= 100
+          clearInterval(timerId)
+          timerId = setInterval(moveDown, segundos) 
+
+
+        }
       }
     }
+    console.log(segundos)
   }
 
   //game over
