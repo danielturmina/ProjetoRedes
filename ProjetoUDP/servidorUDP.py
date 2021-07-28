@@ -57,7 +57,7 @@ def lerArquivo(arquivo):
         cont += 2      
     return perguntas
 
-arquivo = open('campeoes.txt', "r") 
+arquivo = open('ProjetoUDP/campeoes.txt', "r") 
 perguntas = lerArquivo(arquivo)
 arquivo.close()
 
