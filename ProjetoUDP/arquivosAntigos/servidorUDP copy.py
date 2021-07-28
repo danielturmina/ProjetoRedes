@@ -72,6 +72,11 @@ def enviaTodos(lista, msg):
     for i in lista:
         servidor.sendto(msg.encode(), i)
 
+def enviaTodos2(lista, msg):
+    for i in lista:
+        if i[1]: #verifica se está participando do jogo
+            servidor.sendto(msg.encode(), i)
+
 def recebe():
     msgRecebida, endRecebido = servidor.recvfrom(2048) 
     msgRecebida = msgRecebida.decode()
@@ -114,33 +119,35 @@ def cronometro2():
     servidor.sendto('o cronometro zerou!'.encode(),('localhost',porta))      
 
 def inicio(): 
-    global contTempo, porta, comecou #, tempoInterrompido
+    global contTempo, porta, comecou, dicNomes #, tempoInterrompido
 
     while True:
         
         msgBytes, endCliente = recebe()
+        print(endCliente)
+        input('')
         if msgBytes[:11] == 'Conectado: ': #Reconhecendo que conectou e sabendo que o jogador digitou o nome
             if endCliente not in jogadores:
                 jogadores.append(endCliente)
-                dicNomes[endCliente] = msgBytes[11:] #Pegando Nome da pessoas
+                dicNomes[endCliente] = [msgBytes[11:], False] #Pegando Nome da pessoas, FALSE significa que ainda não apertou start (naõ está no jogo de fato, mas está conectado no servidor)
             print(dicNomes)                     
                 
             enviaTodos([endCliente], '100')
 
         print(msgBytes, endCliente) #debugando
 
-        if (msgBytes == 'start') and (endCliente not in jogadoresProntos) and (len(jogadoresProntos) == 5): #Enviando mensagem se alguem quiser se conectar e já tiver 5 jogadores prontos
+        if (msgBytes == 'start') and (not(dicNomes[endCliente][1])) and (len(dicNomes) == 5): #Enviando mensagem se alguem quiser se conectar e já tiver 5 jogadores prontos
             enviaTodos([endCliente], '102')
 
-        if (msgBytes == 'start') and (endCliente not in jogadoresProntos) and (len(jogadoresProntos) < 5): #Limitando a Participação de 5 Pessoas
-            jogadoresProntos.append(endCliente)
+        if (msgBytes == 'start') and (not(dicNomes[endCliente][1])) and (len(dicNomes) < 5): #Limitando a Participação de 5 Pessoas
+            dicNomes[endCliente][1] = True
             dicPontuacao[endCliente] = [None,None,None,None,None]
             enviaTodos([endCliente], '101')
-            if len(jogadoresProntos) >= 2:
+            if len(dicNomes) >= 2:
                 contTempo = 0 
                 time.sleep(1) 
                 Thread(target=cronometro).start()         
-        print(jogadoresProntos) #debug
+        print(dicNomes) #debug
         
         if endCliente[1] == porta: 
             Thread(target=jogando).start()
@@ -150,12 +157,12 @@ def inicio():
 
 def jogando(): 
     print('entrou em jgando') #debug
-    global contTempo, jogadoresProntos, perguntaSortida 
+    global contTempo, dicNomes, perguntaSortida 
   
     #while numRodada < 5:
     for numRodada in range(5):
 
-        enviaTodos(jogadoresProntos, perguntaSortida[numRodada][0])
+        enviaTodos2(dicNomes.keys(), perguntaSortida[numRodada][0])
         time.sleep(1)
         Thread(target=cronometro2).start()
 
@@ -168,20 +175,20 @@ def jogando():
                 print('o cronometro zerou e ninguem acertou')
                 break
 
-            elif (msgBytes == 'start') and (endCliente not in jogadoresProntos) and (comecou == True):   #Jogador tinha entrado, mas não digitou start a tempo
+            elif (msgBytes == 'start') and (not(dicNomes[endCliente][1])) and (comecou == True):   #Jogador tinha entrado, mas não digitou start a tempo
                 enviaTodos([endCliente], '103')   
 
-            elif msgBytes[:11] == 'Conectado: ' and (endCliente not in jogadoresProntos) and (comecou == True):   #Jogador NEM tinha entrado, ou seja NEM start apareceu
+            elif msgBytes[:11] == 'Conectado: ' and (not(dicNomes[endCliente][1])) and (comecou == True):   #Jogador NEM tinha entrado, ou seja NEM start apareceu
                 enviaTodos([endCliente], '104')    
 
-            elif (endCliente in jogadoresProntos) and msgBytes == perguntaSortida[numRodada][1]:      
+            elif msgBytes == perguntaSortida[numRodada][1] and dicNomes[endCliente][1]:   #parte critico pra consertar o erro que tinha dado
                 msg1 = 'O jogador: '+str(dicNomes[endCliente])+' acertou!\n' #Coloquei para mostrar o nome de quem acertou
                 enviaTodos([endCliente], '200')   
                 enviaTodos(jogadoresProntos, msg1)
                 dicPontuacao[endCliente][numRodada] += 25
                 contTempo = 0            
                 
-            elif (endCliente in jogadoresProntos) and msgBytes != perguntaSortida[numRodada][1]:
+            elif msgBytes != perguntaSortida[numRodada][1] and dicNomes[endCliente][1]: #parte critica
                 enviaTodos([endCliente], '300')#Mensagem mostrando que errou
                 if dicPontuacao[endCliente][numRodada] == None:
                     dicPontuacao[endCliente][numRodada] = 0
