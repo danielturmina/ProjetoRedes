@@ -208,7 +208,9 @@ def jogando():
                 msg1 = 'O jogador: '+str(dicNomes[endCliente])+' acertou!\n' #Coloquei para mostrar o nome de quem acertou
                 enviaTodos([endCliente], '200')   
                 enviaTodos(jogadoresProntos, msg1)
-                dicPontuacao[endCliente][numRodada] = 25 #erro nessa linha
+                if dicPontuacao[endCliente][numRodada] == None:
+                    dicPontuacao[endCliente][numRodada] = 0
+                dicPontuacao[endCliente][numRodada] += 25
                 contTempo = 0            
                 
             elif (endCliente in jogadoresProntos) and msgBytes != perguntaSortida[numRodada][1]:
