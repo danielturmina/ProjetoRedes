@@ -52,7 +52,7 @@ dicRespostas = {
 '104':'Partida já iniciada, volte mais tarde!!\n',
 '200':'Você acertou!',
 '300':'Você errou! Tente novamente...',
-'400': 'Uma nova partida está para começar\nDeseja iniciar?\n',
+'400': 'Uma nova partida está para começar\nDeseja iniciar? [s/n]\n',
 '500': 'Ok aguarde o inicio do jogo!',
 '501': 'Tudo bem, obrigado por participar, até logo!',
 '502': 'Aguarde até que o jogo reinicie!',

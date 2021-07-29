@@ -238,7 +238,7 @@ def jogando():
         n += 1
     enviaTodos(jogadoresProntos, '\nFim de Jogo - Obrigado!!\n')
     enviaTodos(jogadores, '400') #pergunta se quer participar novamente
-   
+    novosJogadores = []
     retorno = esperaRetorno()
     
     if retorno:
@@ -250,7 +250,6 @@ def jogando():
         dicNomes = {} #Dicionario de nomes que vai ajudar na hora de imprimir os pontos finais
         dicPontuacao = {}
         contTempo = 10          
-
         arquivo = open('ProjetoUDP/campeoes.txt', "r") 
         perguntas = lerArquivo(arquivo)
         arquivo.close()
