@@ -148,9 +148,39 @@ def inicio():
             comecou = True
             break
 
+novosJogadores = []
+def esperaRetorno():
+    global novosJogadores, jogadoresProntos, jogadores
+    contRetorno = 0
+    flagRetorno =  True
+    jogadoresDesconectados = []
+
+    while flagRetorno:
+        msg, end = recebe()
+        if (end not in novosJogadores) and (end not in jogadoresDesconectados):
+            print('entrou no retorno') #debug
+            if msg == 's':
+                enviaTodos([end], '500')
+                novosJogadores.append(end)
+            else:
+                enviaTodos([end], '501') 
+                jogadoresDesconectados.append(end)
+            contRetorno += 1
+
+        elif end in novosJogadores:
+            enviaTodos([end], '502')
+        
+        if contRetorno >= len(jogadores):
+            flagRetorno = False
+
+    if len(novosJogadores) == 0:
+        return False
+    else:
+        return True
+
 def jogando(): 
-    print('entrou em jgando') #debug
-    global contTempo, jogadoresProntos, perguntaSortida 
+
+    global contTempo, jogadoresProntos, perguntaSortida, dicPontuacao, jogadores, dicNomes, comecou, novosJogadores
   
     #while numRodada < 5:
     for numRodada in range(5):
@@ -178,7 +208,7 @@ def jogando():
                 msg1 = 'O jogador: '+str(dicNomes[endCliente])+' acertou!\n' #Coloquei para mostrar o nome de quem acertou
                 enviaTodos([endCliente], '200')   
                 enviaTodos(jogadoresProntos, msg1)
-                dicPontuacao[endCliente][numRodada] += 25
+                dicPontuacao[endCliente][numRodada] = 25 #erro nessa linha
                 contTempo = 0            
                 
             elif (endCliente in jogadoresProntos) and msgBytes != perguntaSortida[numRodada][1]:
@@ -205,6 +235,34 @@ def jogando():
         enviaTodos(jogadoresProntos, msgFinal)
         n += 1
     enviaTodos(jogadoresProntos, '\nFim de Jogo - Obrigado!!\n')
-
+    enviaTodos(jogadores, '400') #pergunta se quer participar novamente
    
+    retorno = esperaRetorno()
+    
+    if retorno:
+        #limpando 
+        jogadores = []
+        jogadoresProntos = []
+        perguntaSortida = [] 
+        comecou = False
+        dicNomes = {} #Dicionario de nomes que vai ajudar na hora de imprimir os pontos finais
+        dicPontuacao = {}
+        contTempo = 10          
+
+        arquivo = open('ProjetoUDP/campeoes.txt', "r") 
+        perguntas = lerArquivo(arquivo)
+        arquivo.close()
+
+        sorteio = random.sample(range(0,19), 5) 
+        for i in sorteio: 
+            perguntaSortida.append(perguntas[int(i)]) 
+
+        print(perguntaSortida) #debug
+
+        enviaTodos(novosJogadores, '600')
+        Thread(target=inicio).start()
+    
+    else:
+        jogoContinua = False
+    
 Thread(target=inicio).start()
