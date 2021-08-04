@@ -24,7 +24,7 @@ from socket import socket, AF_INET, SOCK_STREAM
 import os
 
 caminho_base = os.path.dirname(__file__)
-if not os.path.isdir(caminho_base+'/pastaEspecifica'):
+if not os.path.isdir(caminho_base+'\pastaEspecifica'):
     os.mkdir(caminho_base+'\pastaEspecifica')
 caminho_base = caminho_base+'\pastaEspecifica'
 
