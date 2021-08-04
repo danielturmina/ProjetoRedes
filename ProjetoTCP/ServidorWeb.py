@@ -22,10 +22,8 @@
 
 from socket import socket, AF_INET, SOCK_STREAM
 import os
-from datetime import datetime, date
+from datetime import *
 
-timestamp = datetime.today().ctime()
-print(timestamp)
 
 caminho_base = os.getcwd()
 if not os.path.isdir(caminho_base+'\pastaEspecifica'):
@@ -66,8 +64,9 @@ def atender_cliente(cliente_socket, cliente_endereco):
 #ERRO 400 - PODE OCORRER TANTO DIFERENTES TIPO DE ERRO DE SINTAXE, COMO SABER?
 
 
-    if versao != '1.0' or versao != '1.1':
+    if versao != '1.0' and versao != '1.1':
         tempo = str(datetime.today().ctime())
+        print(tempo)
         pagina =    ('HTTP/1.1 505 HTTP Version Not Supported\r\n'
                     'Date: '+tempo+'\r\n'
                     'Server: YD-Server Win 11\r\n'
@@ -81,12 +80,29 @@ def atender_cliente(cliente_socket, cliente_endereco):
                         <title>505 HTTP Version Not Supported</title>
                     </head>
                     <body>
-                        <h1>505 HTTP Version Not Supported</h1>
+                        <h1 style="color:red">5MOSTRANDOOOOOO</h1>
                     </body>
                     </html>''')
         mensagem_de_resposta   = pagina
     elif  tipo_requisicao != 'GET':
-        codigo = 501
+        tempo = str(datetime.today().ctime())
+        pagina =    ('HTTP/1.1 501  USAHDUASHDAS\r\n'
+                    'Date: '+tempo+'\r\n'
+                    'Server: YD-Server Win 11\r\n'
+                    'Content-Type: text/html\r\n'
+                    '\r\n')
+        pagina += ('''
+                    <!DOCTYPE html>
+                    <html lang="en">
+                    <head>
+                        <meta charset="UTF-8">
+                        <title>5SDASDSADASDAS</title>
+                    </head>
+                    <body>
+                        <h1>5DSDASDSADASDASDd</h1>
+                    </body>
+                    </html>''')
+        mensagem_de_resposta  = pagina
     elif caminho_requisitado == "/":
         caminho_requisitado = "/"
         lista_arquivos = os.listdir(caminho_requisitado)
