@@ -21,6 +21,12 @@
 
 
 from socket import socket, AF_INET, SOCK_STREAM
+import os
+
+caminho_base = os.path.dirname(__file__)
+if not os.path.isdir(caminho_base+'/pastaEspecifica'):
+    os.mkdir(caminho_base+'\pastaEspecifica')
+caminho_base = caminho_base+'\pastaEspecifica'
 
 def atender_cliente(cliente_socket, cliente_endereco):
     dados_binarios = cliente_socket.recv(2048)
@@ -35,11 +41,32 @@ def atender_cliente(cliente_socket, cliente_endereco):
     primeira_linha = linhas[0].strip()
     colunas = primeira_linha.split(' ')
 
-    print(f'Tipo da requisição: {colunas[0]}')
-    print(f'Caminho requisitado: {colunas[1]}')
-    print(f'Versão do HTTP: {colunas[2]}')
+    versao = colunas[2][5:8]
+    tipo_requisicao = colunas[0]
+    caminho_requisitado = colunas[1]
+    print(tipo_requisicao)
+    print(caminho_requisitado)
+    print(versao)
+    caminho_requisitado_final = caminho_base + caminho_requisitado #Aprender a usar o join para se livrar do problema das \ /
+    print(caminho_requisitado_final)
 
-    print('Respondendo a requisição. Enviando um exemplo de código html.')
+    if versao != '1.0' and versao != '1.1':
+        codigo = 505
+    elif  tipo_requisicao != 'GET':
+        codigo = 501
+    elif caminho_requisitado == "/":
+        caminho_requisitado = "/"
+        lista_arquivos = os.listdir(caminho_requisitado)
+        print(lista_arquivos)
+
+    
+    
+    mensagem_de_resposta = 'OK'
+    cliente_socket.send(mensagem_de_resposta.encode())
+
+    """print('Respondendo a requisição. Enviando um exemplo de código html.')
+
+
 
     html = ''
     html += '<html><head><title>Fica feliz chrome</title></head>'
@@ -58,7 +85,7 @@ def atender_cliente(cliente_socket, cliente_endereco):
 
     mensagem_de_resposta += html
 
-    cliente_socket.send(mensagem_de_resposta.encode())
+    cliente_socket.send(mensagem_de_resposta.encode())"""
 
     cliente_socket.close()
 
