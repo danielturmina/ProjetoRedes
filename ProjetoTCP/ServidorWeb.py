@@ -22,13 +22,19 @@
 
 from socket import socket, AF_INET, SOCK_STREAM
 import os
+from datetime import datetime, date
 
-caminho_base = os.path.dirname(__file__)
+timestamp = datetime.today().ctime()
+print(timestamp)
+
+caminho_base = os.getcwd()
 if not os.path.isdir(caminho_base+'\pastaEspecifica'):
     os.mkdir(caminho_base+'\pastaEspecifica')
 caminho_base = caminho_base+'\pastaEspecifica'
+print(caminho_base)
 
 def atender_cliente(cliente_socket, cliente_endereco):
+    global caminho_base
     dados_binarios = cliente_socket.recv(2048)
 
     print('Mensagem recebida: ')
@@ -47,11 +53,38 @@ def atender_cliente(cliente_socket, cliente_endereco):
     print(tipo_requisicao)
     print(caminho_requisitado)
     print(versao)
-    caminho_requisitado_final = caminho_base + caminho_requisitado #Aprender a usar o join para se livrar do problema das \ /
+    lista = caminho_requisitado.split('/')
+    print(lista)
+    for x in lista:
+        caminho_requisitado_final = os.path.join(caminho_base, x) #Join para se livrar do problema das \ / (Win x Linux)
+        caminho_base = caminho_requisitado_final
+    caminho_base = os.getcwd()
+    print(caminho_base)
     print(caminho_requisitado_final)
 
-    if versao != '1.0' and versao != '1.1':
-        codigo = 505
+
+#ERRO 400 - PODE OCORRER TANTO DIFERENTES TIPO DE ERRO DE SINTAXE, COMO SABER?
+
+
+    if versao != '1.0' or versao != '1.1':
+        tempo = str(datetime.today().ctime())
+        pagina =    ('HTTP/1.1 505 HTTP Version Not Supported\r\n'
+                    'Date: '+tempo+'\r\n'
+                    'Server: YD-Server Win 11\r\n'
+                    'Content-Type: text/html\r\n'
+                    '\r\n')
+        pagina += ('''
+                    <!DOCTYPE html>
+                    <html lang="en">
+                    <head>
+                        <meta charset="UTF-8">
+                        <title>505 HTTP Version Not Supported</title>
+                    </head>
+                    <body>
+                        <h1>505 HTTP Version Not Supported</h1>
+                    </body>
+                    </html>''')
+        mensagem_de_resposta   = pagina
     elif  tipo_requisicao != 'GET':
         codigo = 501
     elif caminho_requisitado == "/":
@@ -60,8 +93,6 @@ def atender_cliente(cliente_socket, cliente_endereco):
         print(lista_arquivos)
 
     
-    
-    mensagem_de_resposta = 'OK'
     cliente_socket.send(mensagem_de_resposta.encode())
 
     """print('Respondendo a requisição. Enviando um exemplo de código html.')
