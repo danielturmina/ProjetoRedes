@@ -69,7 +69,7 @@ def atender_cliente(cliente_socket, cliente_endereco):
         print(tempo)
         pagina =    ('HTTP/1.1 505 HTTP Version Not Supported\r\n'
                     'Date: '+tempo+'\r\n'
-                    'Server: YD-Server Win 11\r\n'
+                    'Server: YD-Server Win 10\r\n'
                     'Content-Type: text/html\r\n'
                     '\r\n')
         pagina += ('''
@@ -80,15 +80,15 @@ def atender_cliente(cliente_socket, cliente_endereco):
                         <title>505 HTTP Version Not Supported</title>
                     </head>
                     <body>
-                        <h1 style="color:red">5MOSTRANDOOOOOO</h1>
+                        <h1>505 HTTP Version Not Supported</h1>
                     </body>
                     </html>''')
         mensagem_de_resposta   = pagina
-    elif  tipo_requisicao != 'GET':
+    elif  tipo_requisicao == 'GET':
         tempo = str(datetime.today().ctime())
-        pagina =    ('HTTP/1.1 501  USAHDUASHDAS\r\n'
+        pagina =    ('HTTP/1.1 501 Not Implemented\r\n'
                     'Date: '+tempo+'\r\n'
-                    'Server: YD-Server Win 11\r\n'
+                    'Server: YD-Server Win 10\r\n'
                     'Content-Type: text/html\r\n'
                     '\r\n')
         pagina += ('''
@@ -96,10 +96,14 @@ def atender_cliente(cliente_socket, cliente_endereco):
                     <html lang="en">
                     <head>
                         <meta charset="UTF-8">
-                        <title>5SDASDSADASDAS</title>
+                        <title>501 Not Implemented</title>
                     </head>
                     <body>
-                        <h1>5DSDASDSADASDASDd</h1>
+                        <h1 style="position:absolute;
+		                    left:50%;
+		                    top:50%;
+		                    margin-left:-110px;
+		                    margin-top:-40px;">501 Not Implemented</h1>
                     </body>
                     </html>''')
         mensagem_de_resposta  = pagina
