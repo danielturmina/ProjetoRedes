@@ -33,6 +33,46 @@ if not os.path.isdir(caminho_base+'\pastaEspecifica'):
 caminho_base = caminho_base+'\pastaEspecifica'
 print(caminho_base)
 
+def mostraDiretorio():
+    caminho = os.getcwd()
+    caminhos = [os.path.join(caminho, nome) for nome in os.listdir(caminho)]
+    
+    paginaHtml = '''<!DOCTYPE html>
+        <html lang="pt-br">
+        <head>
+            <meta charset="UTF-8">
+            <meta http-equiv="X-UA-Compatible" content="IE=edge">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>YD redes</title>
+        </head>
+        <body>
+        <table>
+        <tr>
+        <th>Nome</th>
+        <th>Ultima Modificação</th>
+        <th>Tamanho</th>
+        </tr>
+        '''
+
+    for i in caminhos:
+        indexBarra = i.rfind('\\')
+        tamanhoCaminho = os.path.getsize(i)
+        horaCaminho = os.path.getctime(i)
+        ano,mes,dia,hora,minuto,segundos=time.localtime(horaCaminho)[:-3]
+        horario = "%02d/%02d/%d %02d:%02d:%02d"%(dia,mes,ano,hora,minuto,segundos)
+        
+        paginaHtml += f'''  <tr>
+                    <td><a href= {f'/{i[indexBarra+1:]}'}>{f'{i[indexBarra + 1:]}'}</td>
+                    <td align= "right">{horario}</td>
+                    <td align= "right">{f'{round((tamanhoCaminho/1024),2)} MB'}</td>
+                    <td>&nbsp;</td>
+                </tr>'''
+    paginaHtml += '''</table>
+            </body>
+            </html>'''
+
+    return paginaHtml
+
 def atender_cliente(cliente_socket, cliente_endereco):
     global caminho_base
     dados_binarios = cliente_socket.recv(2048)
@@ -131,42 +171,8 @@ def atender_cliente(cliente_socket, cliente_endereco):
         mensagem_de_resposta  = pagina
 
     else:  #AQUI FAREMOS O 400, O 200 E O NAVEGARO POR PASTAS
-        caminho = os.getcwd()
-        caminhos = [os.path.join(caminho, nome) for nome in os.listdir(caminho)]
         
-        paginaHtml = '''<!DOCTYPE html>
-            <html lang="pt-br">
-            <head>
-                <meta charset="UTF-8">
-                <meta http-equiv="X-UA-Compatible" content="IE=edge">
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>YD redes</title>
-            </head>
-            <body>
-            <table>
-            <tr>
-            <th>Nome</th>
-            <th>Ultima Modificação</th>
-            <th>Tamanho</th>
-            </tr>
-            '''
-
-        for i in caminhos:
-            indexBarra = i.rfind('\\')
-            tamanhoCaminho = os.path.getsize(i)
-            horaCaminho = os.path.getctime(i)
-            ano,mes,dia,hora,minuto,segundos=time.localtime(horaCaminho)[:-3]
-            horario = "%02d/%02d/%d %02d:%02d:%02d"%(dia,mes,ano,hora,minuto,segundos)
-            
-            paginaHtml += f'''  <tr>
-                        <td><a href= {i[indexBarra:]}>{f'{i[indexBarra + 1:]}'}</td>
-                        <td align= "right">{horario}</td>
-                        <td align= "right">{f'{round((tamanhoCaminho/1024),2)} MB'}</td>
-                        <td>&nbsp;</td>
-                    </tr>'''
-        paginaHtml += '''</table>
-                </body>
-                </html>'''
+        paginaHtml = mostraDiretorio()
         
         if caminho_requisitado == '/':
             mensagem_de_resposta = ''
@@ -198,9 +204,67 @@ def atender_cliente(cliente_socket, cliente_endereco):
 
             mensagem_de_resposta += html
         
+        else:
+            if caminho_requisitado != '/favicon.ico':
+                if os.path.isdir(caminho_requisitado_final):
+
+                    paginaHtml = '''<!DOCTYPE html>
+                    <html lang="pt-br">
+                    <head>
+                        <meta charset="UTF-8">
+                        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+                        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                        <title>YD redes</title>
+                    </head>
+                    <body>
+                    <table>
+                    <tr>
+                    <th>Nome</th>
+                    <th>Ultima Modificação</th>
+                    <th>Tamanho</th>
+                    </tr>
+                    '''
+                    for i in os.listdir(caminho_requisitado_final):
+                        paginaHtml += f'''  <tr>
+                                    <td><a href= {i}>{f'{i}'}</td>
+                                    
+                                    <td>&nbsp;</td>
+                                </tr>'''
+                    paginaHtml += '''</table>
+                            </body>
+                            </html>'''
+
+                    page = ('HTTP/1.1 200 OK\r\n'
+                            'Date: Thu, 01 Jul 2021 21:11:19 GMT\r\n'
+                            'Server: servidordotchan/0.0.1 (Windows)\r\n'
+                            'Content-Type: text/html\r\n'
+                            f'Content-Length: {len(paginaHtml)}\r\n'
+                            '\r\n')
+                    mensagem_de_resposta += page + paginaHtml
+
+                    print('dir ', os.listdir(caminho_requisitado_final), 'caminho base :', caminho_base)
+
+                    #print('entrou na parte de pasta', mensagem_de_resposta)
+                    
+                    
+                else:
+                    #arquivo = open('C:\\Users\\YNC\\Documents\\GitHub\\ProjetoRedes\\ProjetoTCP\\teste.py', 'r')
+                    arquivo = open(caminho_requisitado_final, 'r')
+                    arquivoLido = arquivo.read()
+                    print(arquivoLido)
+                    arquivo.close()
+
+                    page = ('HTTP/1.1 200 OK\r\n'
+                            'Date: Thu, 01 Jul 2021 21:11:19 GMT\r\n'
+                            'Server: servidordotchan/0.0.1 (Windows)\r\n'
+                            'Content-Type: text/html\r\n'
+                            f'Content-Length: {len(arquivoLido)}\r\n'
+                            '\r\n')
+                    mensagem_de_resposta += page + arquivoLido
 
     
     cliente_socket.send(mensagem_de_resposta.encode())
+    #input('')
 
 
     cliente_socket.close()
