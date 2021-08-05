@@ -104,35 +104,26 @@ def atender_cliente(cliente_socket, cliente_endereco):
                     </html>''')
         mensagem_de_resposta  = pagina
     elif caminho_requisitado == "/":
-        caminho_requisitado = "/"
-        lista_arquivos = os.listdir(caminho_requisitado)
-        print(lista_arquivos)
+        html = ''
+        html += '<html><head><title>Fica feliz chrome</title></head>'
+        html += '<body>'
+        html += '<h1 style="color:red">Essa pagina eh um exemplo</h1>'
+        html += f'<h2 style="color:gray">Cliente o seu endereco eh: {cliente_endereco}</h2>'
+        html += '</body></html>'
+
+        mensagem_de_resposta = ''
+        mensagem_de_resposta += 'HTTP/1.1 200 OK\r\n'
+        mensagem_de_resposta += 'Date: Thu, 01 Jul 2021 21:11:19 GMT\r\n'
+        mensagem_de_resposta += 'Server: CIn/UFPE/0.0.0.1 (Ubuntu)\r\n'
+        mensagem_de_resposta += f'Content-Length: {len(html)}\r\n'
+        mensagem_de_resposta += 'Content-Type: text/html\r\n'
+        mensagem_de_resposta += '\r\n'
+
+        mensagem_de_resposta += html
 
     
     cliente_socket.send(mensagem_de_resposta.encode())
 
-    """print('Respondendo a requisição. Enviando um exemplo de código html.')
-
-
-
-    html = ''
-    html += '<html><head><title>Fica feliz chrome</title></head>'
-    html += '<body>'
-    html += '<h1 style="color:red">Essa pagina eh um exemplo</h1>'
-    html += f'<h2 style="color:gray">Cliente o seu endereco eh: {cliente_endereco}</h2>'
-    html += '</body></html>'
-
-    mensagem_de_resposta = ''
-    mensagem_de_resposta += 'HTTP/1.1 200 OK\r\n'
-    mensagem_de_resposta += 'Date: Thu, 01 Jul 2021 21:11:19 GMT\r\n'
-    mensagem_de_resposta += 'Server: CIn/UFPE/0.0.0.1 (Ubuntu)\r\n'
-    mensagem_de_resposta += f'Content-Length: {len(html)}\r\n'
-    mensagem_de_resposta += 'Content-Type: text/html\r\n'
-    mensagem_de_resposta += '\r\n'
-
-    mensagem_de_resposta += html
-
-    cliente_socket.send(mensagem_de_resposta.encode())"""
 
     cliente_socket.close()
 
