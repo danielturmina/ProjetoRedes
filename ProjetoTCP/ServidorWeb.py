@@ -23,6 +23,8 @@
 from socket import socket, AF_INET, SOCK_STREAM
 import os
 from datetime import *
+import datetime
+import time
 
 
 caminho_base = os.getcwd()
@@ -38,7 +40,7 @@ def atender_cliente(cliente_socket, cliente_endereco):
     print('Mensagem recebida: ')
 
     mensagem_recebida = dados_binarios.decode()
-    print(mensagem_recebida)
+    print('msg recebida: ', mensagem_recebida)
 
     print('\n\nDetalhamento da requisição:')
     linhas = mensagem_recebida.split('\n')
@@ -48,9 +50,9 @@ def atender_cliente(cliente_socket, cliente_endereco):
     versao = colunas[2][5:8]
     tipo_requisicao = colunas[0]
     caminho_requisitado = colunas[1]
-    print(tipo_requisicao)
-    print(caminho_requisitado)
-    print(versao)
+    print('tipo de requisicao: ', tipo_requisicao)
+    print('caminho requisitado: ', caminho_requisitado)
+    print('versao: ', versao)
     lista = caminho_requisitado.split('/')
     print(lista)
     for x in lista:
@@ -63,7 +65,7 @@ def atender_cliente(cliente_socket, cliente_endereco):
 
 #ERRO 400 - PODE OCORRER TANTO DIFERENTES TIPO DE ERRO DE SINTAXE, COMO SABER?
 
-
+    mensagem_de_resposta = ''   #coloquei porque dava um erro quando coloquei os condicionais para cada requisição dentro do "else"
     if versao != '1.0' and versao != '1.1':
         tempo = str(datetime.today().ctime())
         print(tempo)
@@ -84,7 +86,7 @@ def atender_cliente(cliente_socket, cliente_endereco):
                         <h2>Versão do HTTP utilizada não é suportada neste servidor<h2>
                     </body>
                     </html>''')
-        mensagem_de_resposta   = pagina
+        mensagem_de_resposta = pagina
     elif  tipo_requisicao != 'GET':
         tempo = str(datetime.today().ctime())
         pagina =    ('HTTP/1.1 501 Not Implemented\r\n'
@@ -129,22 +131,73 @@ def atender_cliente(cliente_socket, cliente_endereco):
         mensagem_de_resposta  = pagina
 
     else:  #AQUI FAREMOS O 400, O 200 E O NAVEGARO POR PASTAS
-        html = ''
-        html += '<html><head><title>Fica feliz chrome</title></head>'
-        html += '<body>'
-        html += '<h1 style="color:red">Essa pagina eh um exemplo</h1>'
-        html += f'<h2 style="color:gray">Cliente o seu endereco eh: {cliente_endereco}</h2>'
-        html += '</body></html>'
+        caminho = os.getcwd()
+        caminhos = [os.path.join(caminho, nome) for nome in os.listdir(caminho)]
+        
+        paginaHtml = '''<!DOCTYPE html>
+            <html lang="pt-br">
+            <head>
+                <meta charset="UTF-8">
+                <meta http-equiv="X-UA-Compatible" content="IE=edge">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>YD redes</title>
+            </head>
+            <body>
+            <table>
+            <tr>
+            <th>Nome</th>
+            <th>Ultima Modificação</th>
+            <th>Tamanho</th>
+            </tr>
+            '''
 
-        mensagem_de_resposta = ''
-        mensagem_de_resposta += 'HTTP/1.1 200 OK\r\n'
-        mensagem_de_resposta += 'Date: Thu, 01 Jul 2021 21:11:19 GMT\r\n'
-        mensagem_de_resposta += 'Server: CIn/UFPE/0.0.0.1 (Ubuntu)\r\n'
-        mensagem_de_resposta += f'Content-Length: {len(html)}\r\n'
-        mensagem_de_resposta += 'Content-Type: text/html\r\n'
-        mensagem_de_resposta += '\r\n'
+        for i in caminhos:
+            indexBarra = i.rfind('\\')
+            tamanhoCaminho = os.path.getsize(i)
+            horaCaminho = os.path.getctime(i)
+            ano,mes,dia,hora,minuto,segundos=time.localtime(horaCaminho)[:-3]
+            horario = "%02d/%02d/%d %02d:%02d:%02d"%(dia,mes,ano,hora,minuto,segundos)
+            
+            paginaHtml += f'''  <tr>
+                        <td><a href= {i[indexBarra:]}>{f'{i[indexBarra + 1:]}'}</td>
+                        <td align= "right">{horario}</td>
+                        <td align= "right">{f'{round((tamanhoCaminho/1024),2)} MB'}</td>
+                        <td>&nbsp;</td>
+                    </tr>'''
+        paginaHtml += '''</table>
+                </body>
+                </html>'''
+        
+        if caminho_requisitado == '/':
+            mensagem_de_resposta = ''
+            mensagem_de_resposta += 'HTTP/1.1 200 OK\r\n'
+            mensagem_de_resposta += 'Date: Thu, 01 Jul 2021 21:11:19 GMT\r\n'
+            mensagem_de_resposta += 'Server: CIn/UFPE/0.0.0.1 (Ubuntu)\r\n'
+            mensagem_de_resposta += f'Content-Length: {len(paginaHtml)}\r\n'
+            mensagem_de_resposta += 'Content-Type: text/html\r\n'
+            mensagem_de_resposta += '\r\n'
 
-        mensagem_de_resposta += html
+            mensagem_de_resposta += paginaHtml
+                       
+
+        if caminho_requisitado == '/teste': #alterei
+            html = ''
+            html += '<html><head><title>Fica feliz chrome</title></head>'
+            html += '<body>'
+            html += '<h1 style="color:red">Essa pagina eh um exemplo</h1>'
+            html += f'<h2 style="color:gray">Cliente o seu endereco eh: {cliente_endereco}</h2>'
+            html += '</body></html>'
+
+            mensagem_de_resposta = ''
+            mensagem_de_resposta += 'HTTP/1.1 200 OK\r\n'
+            mensagem_de_resposta += 'Date: Thu, 01 Jul 2021 21:11:19 GMT\r\n'
+            mensagem_de_resposta += 'Server: CIn/UFPE/0.0.0.1 (Ubuntu)\r\n'
+            mensagem_de_resposta += f'Content-Length: {len(html)}\r\n'
+            mensagem_de_resposta += 'Content-Type: text/html\r\n'
+            mensagem_de_resposta += '\r\n'
+
+            mensagem_de_resposta += html
+        
 
     
     cliente_socket.send(mensagem_de_resposta.encode())
