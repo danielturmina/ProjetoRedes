@@ -1,5 +1,5 @@
 """Projeto 2: Servidor Web (implemente o protocolo padronizado HTTP/1.1) - TCP
-● Deverá ser desenvolvido um servidor WEB;
+● Deverá ser desenvolvido um servidor WEB OK;
 ● Deverá implementar o protocolo HTTP/1.1, apenas o método GET;
 ● O servidor terá que ser capaz de retornar diversos tipos de arquivos (por ex: html, htm, css, js, png, jpg, svg...);
 ● Ou seja, deverá conseguir manipular tanto arquivos de texto, quanto arquivos binários;
@@ -7,17 +7,17 @@
 ● Os requisitos mínimos (devem ser implementados obrigatoriamente) são o desenvolvimento das respostas com os códigos de resposta a seguir:
             ○ 200 OK
                     ■ Requisição bem-sucedida, objeto requisitado será enviado
-            ○ 400 Bad Request
-                    ■ Mensagem de requisição não entendida pelo servidor, nesse caso o cliente escreveu a mensagem de requisição com algum erro de sintaxe
+            ○ 400 Bad Request OK
+                    ■ Mensagem de requisição não entendida pelo servidor, nesse caso o cliente escreveu a mensagem de requisição com algum erro de sintaxe OK
             ○ 404 Not Found
                     ■ Documento requisitado não localizado no servidor
-            ○ 505 HTTP Version Not Supported
-                    ■ Versão do HTTP utilizada não é suportada neste servidor
+            ○ 505 HTTP Version Not Supported OK
+                    ■ Versão do HTTP utilizada não é suportada neste servidor OK
 ● Com exceção do código 200, o servidor deverá enviar obrigatoriamente um arquivo html personalizado informando o respectivo erro;
 ● Se a pasta requisitada não contiver um arquivo index.html ou index.htm, o servidor deverá criar uma página html para navegar pelas pastas, semelhante ao que ​apache​ faz
 (que navega nas pastas de forma semelhante ao windows explorer, nautilus e afins...);
-● O servidor Web deverá ler os arquivos de uma pasta específica, caso ela não exista, deverá ser criada automaticamente ao executar o servidor;
-● O uso de sockets TCP é obrigatório."""
+● O servidor Web deverá ler os arquivos de uma pasta específica, caso ela não exista, deverá ser criada automaticamente ao executar o servidor; OK
+● O uso de sockets TCP é obrigatório. OK"""
 
 
 from socket import socket, AF_INET, SOCK_STREAM
@@ -81,10 +81,11 @@ def atender_cliente(cliente_socket, cliente_endereco):
                     </head>
                     <body>
                         <h1>505 HTTP Version Not Supported</h1>
+                        <h2>Versão do HTTP utilizada não é suportada neste servidor<h2>
                     </body>
                     </html>''')
         mensagem_de_resposta   = pagina
-    elif  tipo_requisicao == 'GET':
+    elif  tipo_requisicao != 'GET':
         tempo = str(datetime.today().ctime())
         pagina =    ('HTTP/1.1 501 Not Implemented\r\n'
                     'Date: '+tempo+'\r\n'
@@ -99,15 +100,35 @@ def atender_cliente(cliente_socket, cliente_endereco):
                         <title>501 Not Implemented</title>
                     </head>
                     <body>
-                        <h1 style="position:absolute;
-		                    left:50%;
-		                    top:50%;
-		                    margin-left:-110px;
-		                    margin-top:-40px;">501 Not Implemented</h1>
+                        <h1>501 Not Implemented</h1>
+                        <h2>Tipo de requisição não implementado no servidor<h2>
                     </body>
                     </html>''')
         mensagem_de_resposta  = pagina
-    elif caminho_requisitado == "/":
+
+    
+    elif caminho_requisitado[0] != "/":  #SERA QUE É ISSO??
+        tempo = str(datetime.today().ctime())
+        pagina =    ('HTTP/1.1 400 Bad Request\r\n'
+                    'Date: '+tempo+'\r\n'
+                    'Server: YD-Server Win 10\r\n'
+                    'Content-Type: text/html\r\n'
+                    '\r\n')
+        pagina += ('''
+                    <!DOCTYPE html>
+                    <html lang="en">
+                    <head>
+                        <meta charset="UTF-8">
+                        <title>400 Bad Request</title>
+                    </head>
+                    <body>
+                        <h1>400 Bad Request</h1>
+                        <h2>Mensagem de requisição não entendida pelo servidor<h2>
+                    </body>
+                    </html>''')
+        mensagem_de_resposta  = pagina
+
+    else:  #AQUI FAREMOS O 400, O 200 E O NAVEGARO POR PASTAS
         html = ''
         html += '<html><head><title>Fica feliz chrome</title></head>'
         html += '<body>'
