@@ -171,7 +171,7 @@ def atender_cliente(cliente_socket, cliente_endereco):
         mensagem_de_resposta  = pagina
 
     else:  #AQUI FAREMOS O 400, O 200 E O NAVEGARO POR PASTAS
-        
+        '''
         paginaHtml = mostraDiretorio()
         
         if caminho_requisitado == '/':
@@ -184,83 +184,68 @@ def atender_cliente(cliente_socket, cliente_endereco):
             mensagem_de_resposta += '\r\n'
 
             mensagem_de_resposta += paginaHtml
-                       
-
-        if caminho_requisitado == '/teste': #alterei
-            html = ''
-            html += '<html><head><title>Fica feliz chrome</title></head>'
-            html += '<body>'
-            html += '<h1 style="color:red">Essa pagina eh um exemplo</h1>'
-            html += f'<h2 style="color:gray">Cliente o seu endereco eh: {cliente_endereco}</h2>'
-            html += '</body></html>'
-
-            mensagem_de_resposta = ''
-            mensagem_de_resposta += 'HTTP/1.1 200 OK\r\n'
-            mensagem_de_resposta += 'Date: Thu, 01 Jul 2021 21:11:19 GMT\r\n'
-            mensagem_de_resposta += 'Server: CIn/UFPE/0.0.0.1 (Ubuntu)\r\n'
-            mensagem_de_resposta += f'Content-Length: {len(html)}\r\n'
-            mensagem_de_resposta += 'Content-Type: text/html\r\n'
-            mensagem_de_resposta += '\r\n'
-
-            mensagem_de_resposta += html
         
-        else:
-            if caminho_requisitado != '/favicon.ico':
-                if os.path.isdir(caminho_requisitado_final):
+        else:'''
+        if caminho_requisitado != '/favicon.ico':
+            if os.path.isdir(caminho_requisitado_final):
 
-                    paginaHtml = '''<!DOCTYPE html>
-                    <html lang="pt-br">
-                    <head>
-                        <meta charset="UTF-8">
-                        <meta http-equiv="X-UA-Compatible" content="IE=edge">
-                        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                        <title>YD redes</title>
-                    </head>
-                    <body>
-                    <table>
-                    <tr>
-                    <th>Nome</th>
-                    <th>Ultima Modificação</th>
-                    <th>Tamanho</th>
-                    </tr>
-                    '''
-                    for i in os.listdir(caminho_requisitado_final):
-                        paginaHtml += f'''  <tr>
-                                    <td><a href= {i}>{f'{i}'}</td>
-                                    
-                                    <td>&nbsp;</td>
-                                </tr>'''
-                    paginaHtml += '''</table>
-                            </body>
-                            </html>'''
-
-                    page = ('HTTP/1.1 200 OK\r\n'
-                            'Date: Thu, 01 Jul 2021 21:11:19 GMT\r\n'
-                            'Server: servidordotchan/0.0.1 (Windows)\r\n'
-                            'Content-Type: text/html\r\n'
-                            f'Content-Length: {len(paginaHtml)}\r\n'
-                            '\r\n')
-                    mensagem_de_resposta += page + paginaHtml
-
-                    print('dir ', os.listdir(caminho_requisitado_final), 'caminho base :', caminho_base)
-
-                    #print('entrou na parte de pasta', mensagem_de_resposta)
+                paginaHtml = '''<!DOCTYPE html>
+                <html lang="pt-br">
+                <head>
+                    <meta charset="UTF-8">
+                    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <title>YD redes</title>
+                </head>
+                <body>
+                <table>
+                <tr>
+                <th>Nome</th>
+                <th>Ultima Modificação</th>
+                <th>Tamanho</th>
+                </tr>
+                '''
+                for i in os.listdir(caminho_requisitado_final):
                     
-                    
-                else:
-                    #arquivo = open('C:\\Users\\YNC\\Documents\\GitHub\\ProjetoRedes\\ProjetoTCP\\teste.py', 'r')
-                    arquivo = open(caminho_requisitado_final, 'r')
-                    arquivoLido = arquivo.read()
-                    print(arquivoLido)
-                    arquivo.close()
+                    testando = caminho_requisitado_final + '\\' + i
+                    print('testa', testando)
+                    print('testando', testando[len(caminho_base):])
+                    paginaHtml += f'''  <tr>
+                                <td><a href= {testando[len(caminho_base):]}>{f'{i}'}</td>
+                                
+                                <td>&nbsp;</td>
+                            </tr>'''
+                paginaHtml += '''</table>
+                        </body>
+                        </html>'''
 
-                    page = ('HTTP/1.1 200 OK\r\n'
-                            'Date: Thu, 01 Jul 2021 21:11:19 GMT\r\n'
-                            'Server: servidordotchan/0.0.1 (Windows)\r\n'
-                            'Content-Type: text/html\r\n'
-                            f'Content-Length: {len(arquivoLido)}\r\n'
-                            '\r\n')
-                    mensagem_de_resposta += page + arquivoLido
+                page = ('HTTP/1.1 200 OK\r\n'
+                        'Date: Thu, 01 Jul 2021 21:11:19 GMT\r\n'
+                        'Server: servidordotchan/0.0.1 (Windows)\r\n'
+                        'Content-Type: text/html\r\n'
+                        f'Content-Length: {len(paginaHtml)}\r\n'
+                        '\r\n')
+                mensagem_de_resposta += page + paginaHtml
+
+                print('dir ', os.listdir(caminho_requisitado_final), 'caminho base :', caminho_base)
+
+                #print('entrou na parte de pasta', mensagem_de_resposta)
+                
+                
+            else:
+                #arquivo = open('C:\\Users\\YNC\\Documents\\GitHub\\ProjetoRedes\\ProjetoTCP\\teste.py', 'r')
+                arquivo = open(caminho_requisitado_final, 'r')
+                arquivoLido = arquivo.read()
+                print(arquivoLido)
+                arquivo.close()
+
+                page = ('HTTP/1.1 200 OK\r\n'
+                        'Date: Thu, 01 Jul 2021 21:11:19 GMT\r\n'
+                        'Server: servidordotchan/0.0.1 (Windows)\r\n'
+                        'Content-Type: text/html\r\n'
+                        f'Content-Length: {len(arquivoLido)}\r\n'
+                        '\r\n')
+                mensagem_de_resposta += page + arquivoLido
 
     
     cliente_socket.send(mensagem_de_resposta.encode())
