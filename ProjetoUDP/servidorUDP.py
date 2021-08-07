@@ -22,9 +22,6 @@
 ○
 """
 
-#É necessário tratar nomes iguais?
-#É necessário tratar empates?
-
 from socket import socket, AF_INET, SOCK_DGRAM
 from threading import Thread
 import random
@@ -35,12 +32,11 @@ jogadores = []
 jogadoresProntos = []
 perguntaSortida = [] 
 comecou = False
-dicNomes = {} #Dicionario de nomes que vai ajudar na hora de imprimir os pontos finais
+dicNomes = {} 
 dicPontuacao = {}
-#numRodada = 0
 porta = 12000 
 contTempo = 10
-#tempoInterrompido = False
+
 
 servidor = socket(AF_INET, SOCK_DGRAM)
 servidor.bind(('', porta)) 
@@ -66,7 +62,7 @@ sorteio = random.sample(range(0,19), 5)
 for i in sorteio: 
     perguntaSortida.append(perguntas[int(i)]) 
 
-print(perguntaSortida) #debug
+print('Servidor iniciado, perguntas sorteadas e aguardando conexões.')
 
 def enviaTodos(lista, msg):
     for i in lista:
@@ -82,13 +78,13 @@ def cronometro():
     global contTempo, porta, comecou
     contTempo = 10 
     somaCont = 0
-
+    print('Iniciando cronômetro...')
     while contTempo > 0:
+        
         time.sleep(1)
-        print(contTempo)
         if not comecou and contTempo == 0:
             enviaTodos(jogadoresProntos, str("Novo jogador entrou na sala, o tempo será reiniciado!"))
-        if not comecou and contTempo != 0: #Nao vai aparecer 0 qnd um novo entrar, no meio da contagem
+        if not comecou and contTempo != 0: 
             enviaTodos(jogadoresProntos, str(contTempo))
         somaCont += contTempo
         contTempo -= 1  
@@ -96,25 +92,24 @@ def cronometro():
     if somaCont == 55:
         servidor.sendto('o jogo começou!'.encode(),('localhost',porta))
         
-    #tempoInterrompido = True
-    print('cronometro fechado')#debug
+    
+    print('Cronômetro fechado')
 
 def cronometro2(): 
-    
-    global contTempo, porta, comecou #, tempoInterrompido
+    print('Iniciando cronômetro...')
+    global contTempo, porta, comecou
     contTempo = 10 
     somaCont2 = 0
 
     while contTempo > 0:
         time.sleep(1)
-        print(contTempo)
         somaCont2 += contTempo
         contTempo -= 1  
     
-    servidor.sendto('o cronometro zerou!'.encode(),('localhost',porta))      
+    servidor.sendto('o cronômetro zerou!'.encode(),('localhost',porta))      
 
 def inicio(): 
-    global contTempo, porta, comecou #, tempoInterrompido
+    global contTempo, porta, comecou 
 
     while True:
         
@@ -123,11 +118,10 @@ def inicio():
             if endCliente not in jogadores:
                 jogadores.append(endCliente)
                 dicNomes[endCliente] = msgBytes[11:] #Pegando Nome da pessoas
-            print(dicNomes)                     
+                                
                 
             enviaTodos([endCliente], '100')
 
-        print(msgBytes, endCliente) #debugando
 
         if (msgBytes == 'start') and (endCliente not in jogadoresProntos) and (len(jogadoresProntos) == 5): #Enviando mensagem se alguem quiser se conectar e já tiver 5 jogadores prontos
             enviaTodos([endCliente], '102')
@@ -140,11 +134,10 @@ def inicio():
                 contTempo = 0 
                 time.sleep(1) 
                 Thread(target=cronometro).start()         
-        print(jogadoresProntos) #debug
+            print('Jogadores Prontos: ',jogadoresProntos)
         
         if endCliente[1] == porta: 
             Thread(target=jogando).start()
-            #tempoInterrompido = False
             comecou = True
             break
 
@@ -158,7 +151,6 @@ def esperaRetorno():
     while flagRetorno:
         msg, end = recebe()
         if (end not in novosJogadores) and (end not in jogadoresDesconectados):
-            print('entrou no retorno') #debug
             if msg == 's':
                 enviaTodos([end], '500')
                 novosJogadores.append(end)
@@ -182,7 +174,6 @@ def jogando():
 
     global contTempo, jogadoresProntos, perguntaSortida, dicPontuacao, jogadores, dicNomes, comecou, novosJogadores
   
-    #while numRodada < 5:
     for numRodada in range(5):
 
         enviaTodos(jogadoresProntos, perguntaSortida[numRodada][0])
@@ -192,10 +183,9 @@ def jogando():
         while True:  
             
             msgBytes, endCliente = recebe()
-            print('testando ', msgBytes, ' ', perguntaSortida[numRodada][1]) #debug
             
             if endCliente[1] == porta:
-                print('o cronometro zerou e ninguem acertou')
+                print('Cronômetro fechado')
                 break
 
             elif (msgBytes == 'start') and (endCliente not in jogadoresProntos) and (comecou == True):   #Jogador tinha entrado, mas não digitou start a tempo
@@ -204,7 +194,8 @@ def jogando():
             elif msgBytes[:11] == 'Conectado: ' and (endCliente not in jogadoresProntos) and (comecou == True):   #Jogador NEM tinha entrado, ou seja NEM start apareceu
                 enviaTodos([endCliente], '104')    
 
-            elif (endCliente in jogadoresProntos) and msgBytes == perguntaSortida[numRodada][1]:      
+            elif (endCliente in jogadoresProntos) and msgBytes == perguntaSortida[numRodada][1]:  
+                print('O jogador:',dicNomes[endCliente],'acertou a pergunta')    
                 msg1 = 'O jogador: '+str(dicNomes[endCliente])+' acertou!\n' #Coloquei para mostrar o nome de quem acertou
                 enviaTodos([endCliente], '200')   
                 enviaTodos(jogadoresProntos, msg1)
@@ -215,11 +206,11 @@ def jogando():
                 
             elif (endCliente in jogadoresProntos) and msgBytes != perguntaSortida[numRodada][1]:
                 enviaTodos([endCliente], '300')#Mensagem mostrando que errou
+                print('O jogador:',dicNomes[endCliente],'errou a pergunta') 
                 if dicPontuacao[endCliente][numRodada] == None:
                     dicPontuacao[endCliente][numRodada] = 0
                 dicPontuacao[endCliente][numRodada] -= 5
 
-    print(dicPontuacao) 
     n = 1
     dicPontosFinais = {}
     contPontos = 0
@@ -232,7 +223,7 @@ def jogando():
                 contPontos -=1
         dicPontosFinais[i] = contPontos    
         contPontos = 0
-    for i in sorted(dicPontosFinais, key = dicPontosFinais.get, reverse=True): #O que fazer em caso de empate? Corrigir
+    for i in sorted(dicPontosFinais, key = dicPontosFinais.get, reverse=True): 
         msgFinal = str(n)+"° Lugar: "+str(dicNomes[i])+" com "+str(dicPontosFinais[i])+" pontos!"
         enviaTodos(jogadoresProntos, msgFinal)
         n += 1
@@ -242,12 +233,11 @@ def jogando():
     retorno = esperaRetorno()
     
     if retorno:
-        #limpando 
         jogadores = []
         jogadoresProntos = []
         perguntaSortida = [] 
         comecou = False
-        dicNomes = {} #Dicionario de nomes que vai ajudar na hora de imprimir os pontos finais
+        dicNomes = {} 
         dicPontuacao = {}
         contTempo = 10          
         arquivo = open('ProjetoUDP/campeoes.txt', "r") 
@@ -257,8 +247,6 @@ def jogando():
         sorteio = random.sample(range(0,19), 5) 
         for i in sorteio: 
             perguntaSortida.append(perguntas[int(i)]) 
-
-        print(perguntaSortida) #debug
 
         enviaTodos(novosJogadores, '600')
         Thread(target=inicio).start()
