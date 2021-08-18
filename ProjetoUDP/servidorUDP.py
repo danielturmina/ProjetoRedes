@@ -1,32 +1,13 @@
 """ 
-● Deverá ser desenvolvido um jogo com competições ​online​ de perguntas e respostas; OK
-○ Um protocolo da camada de aplicação deverá ser desenvolvido e especificado no relatório;  ---------- ???
-● Deverá ter pelo menos uma mensagem de requisição e pelo menos uma mensagem de resposta; OK
-● O protocolo de transporte UDP deverá ser utilizado; OK
-● Um servidor UDP deverá gerenciar as competições; OK
-● Até 5 clientes UDP poderão participar de uma competição; OK
-● Após a competição ser iniciada, não deverá ser permitido o ingresso de novos participantes; OK
-● Cada competição terá 5 rodadas de perguntas e respostas; OK
-● O servidor deverá ter um arquivo de texto contendo pelo menos 20 tuplas de perguntas e respostas; OK
-● As respostas deverão ser compostas por uma única palavra, com caracteres minúsculos; OK
-● O tema do Quiz ficará a critério da equipe; OK
-● O servidor irá escolher aleatoriamente uma tupla de pergunta/resposta que será utilizada na rodada; OK
-● Uma mesma competição não poderá ter duas tuplas repetidas; OK
-● Cada rodada será encerrada quando algum participante acertar a resposta ou atingir uma duração máxima de 10 segundos; OK
-● Pontuação de cada rodada:
-● Cada resposta errada: -5 pontos OK
-● Sem resposta: -1 ponto OK
-● Resposta correta: 25 pontos OK
-● Após uma competição ser encerrada, um ​ranking​ com a pontuação é divulgado; OK
-● e uma nova competição poderá ser iniciada. ------------------- FALTA IMPLEMENTAR
-○
+Projeto 1: Quiz Competitivo
+dft@cin.ufpe.br
+ycb@cin.ufpe.br
 """
 
 from socket import socket, AF_INET, SOCK_DGRAM
 from threading import Thread
 import random
 import time
-
 
 jogadores = []
 jogadoresProntos = []
@@ -36,7 +17,6 @@ dicNomes = {}
 dicPontuacao = {}
 porta = 12000 
 contTempo = 10
-
 
 servidor = socket(AF_INET, SOCK_DGRAM)
 servidor.bind(('', porta)) 
@@ -91,7 +71,6 @@ def cronometro():
 
     if somaCont == 55:
         servidor.sendto('o jogo começou!'.encode(),('localhost',porta))
-        
     
     print('Cronômetro fechado')
 
@@ -111,22 +90,19 @@ def cronometro2():
 def inicio(): 
     global contTempo, porta, comecou 
 
-    while True:
-        
+    while True:      
         msgBytes, endCliente = recebe()
-        if msgBytes[:11] == 'Conectado: ': #Reconhecendo que conectou e sabendo que o jogador digitou o nome
+        if msgBytes[:11] == 'Conectado: ': 
             if endCliente not in jogadores:
                 jogadores.append(endCliente)
-                dicNomes[endCliente] = msgBytes[11:] #Pegando Nome da pessoas
-                                
-                
+                dicNomes[endCliente] = msgBytes[11:] 
+                                              
             enviaTodos([endCliente], '100')
 
-
-        if (msgBytes == 'start') and (endCliente not in jogadoresProntos) and (len(jogadoresProntos) == 5): #Enviando mensagem se alguem quiser se conectar e já tiver 5 jogadores prontos
+        if (msgBytes == 'start') and (endCliente not in jogadoresProntos) and (len(jogadoresProntos) == 5): 
             enviaTodos([endCliente], '102')
 
-        if (msgBytes == 'start') and (endCliente not in jogadoresProntos) and (len(jogadoresProntos) < 5): #Limitando a Participação de 5 Pessoas
+        if (msgBytes == 'start') and (endCliente not in jogadoresProntos) and (len(jogadoresProntos) < 5):
             jogadoresProntos.append(endCliente)
             dicPontuacao[endCliente] = [None,None,None,None,None]
             enviaTodos([endCliente], '101')
@@ -142,6 +118,7 @@ def inicio():
             break
 
 novosJogadores = []
+
 def esperaRetorno():
     global novosJogadores, jogadoresProntos, jogadores
     contRetorno = 0
@@ -171,32 +148,29 @@ def esperaRetorno():
         return True
 
 def jogando(): 
-
     global contTempo, jogadoresProntos, perguntaSortida, dicPontuacao, jogadores, dicNomes, comecou, novosJogadores
   
     for numRodada in range(5):
-
         enviaTodos(jogadoresProntos, perguntaSortida[numRodada][0])
         time.sleep(1)
         Thread(target=cronometro2).start()
 
-        while True:  
-            
+        while True:   
             msgBytes, endCliente = recebe()
             
             if endCliente[1] == porta:
                 print('Cronômetro fechado')
                 break
 
-            elif (msgBytes == 'start') and (endCliente not in jogadoresProntos) and (comecou == True):   #Jogador tinha entrado, mas não digitou start a tempo
+            elif (msgBytes == 'start') and (endCliente not in jogadoresProntos) and (comecou == True):
                 enviaTodos([endCliente], '103')   
 
-            elif msgBytes[:11] == 'Conectado: ' and (endCliente not in jogadoresProntos) and (comecou == True):   #Jogador NEM tinha entrado, ou seja NEM start apareceu
+            elif msgBytes[:11] == 'Conectado: ' and (endCliente not in jogadoresProntos) and (comecou == True):
                 enviaTodos([endCliente], '104')    
 
             elif (endCliente in jogadoresProntos) and msgBytes == perguntaSortida[numRodada][1]:  
                 print('O jogador:',dicNomes[endCliente],'acertou a pergunta')    
-                msg1 = 'O jogador: '+str(dicNomes[endCliente])+' acertou!\n' #Coloquei para mostrar o nome de quem acertou
+                msg1 = 'O jogador: '+str(dicNomes[endCliente])+' acertou!\n'
                 enviaTodos([endCliente], '200')   
                 enviaTodos(jogadoresProntos, msg1)
                 if dicPontuacao[endCliente][numRodada] == None:
@@ -205,7 +179,7 @@ def jogando():
                 contTempo = 0            
                 
             elif (endCliente in jogadoresProntos) and msgBytes != perguntaSortida[numRodada][1]:
-                enviaTodos([endCliente], '300')#Mensagem mostrando que errou
+                enviaTodos([endCliente], '300')
                 print('O jogador:',dicNomes[endCliente],'errou a pergunta') 
                 if dicPontuacao[endCliente][numRodada] == None:
                     dicPontuacao[endCliente][numRodada] = 0
@@ -228,7 +202,7 @@ def jogando():
         enviaTodos(jogadoresProntos, msgFinal)
         n += 1
     enviaTodos(jogadoresProntos, '\nFim de Jogo - Obrigado!!\n')
-    enviaTodos(jogadores, '400') #pergunta se quer participar novamente
+    enviaTodos(jogadores, '400')
     novosJogadores = []
     retorno = esperaRetorno()
     
@@ -243,8 +217,8 @@ def jogando():
         arquivo = open('ProjetoUDP/campeoes.txt', "r") 
         perguntas = lerArquivo(arquivo)
         arquivo.close()
-
         sorteio = random.sample(range(0,19), 5) 
+
         for i in sorteio: 
             perguntaSortida.append(perguntas[int(i)]) 
 

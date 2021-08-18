@@ -1,8 +1,8 @@
 from socket import socket, AF_INET, SOCK_DGRAM
 from threading import Thread
-import time #Não estamos usando
+import time 
 
-encerra = False # Qual o uso?
+encerra = False 
 cliente = socket(AF_INET, SOCK_DGRAM)
 
 def envia():
@@ -14,9 +14,9 @@ def envia():
         cliente.sendto(msg.encode(),('localhost',12000))
 
 def clienteInicio():
-    print("--- Quiz: Campeões do Mundo! --- \nAperte Enter para Continuar\n") #o aperte enter é uma gambiarra pra passar para o input do nome, pois não tem como quebrar o input da thread.
+    print("--- Quiz: Campeões do Mundo! --- \nAperte Enter para Continuar\n")
     texto = 'Conectado: '
-    while True: # Pedindo nome e evitando nomes vazios
+    while True: 
         nome = input('Digite seu nome:\n') 
         if len(nome) > 0:
             break 
@@ -37,7 +37,7 @@ def recebe():
 
 print("--- Quiz: Campeões do Mundo! --- ")
 texto = 'Conectado: '
-while True: # Pedindo nome e evitando nomes vazios
+while True:
     nome = input('Digite seu nome:') 
     if len(nome) > 0:
         break 

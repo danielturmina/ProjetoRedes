@@ -1,24 +1,7 @@
-"""Projeto 2: Servidor Web (implemente o protocolo padronizado HTTP/1.1) - TCP
-● Deverá ser desenvolvido um servidor WEB OK;
-● Deverá implementar o protocolo HTTP/1.1, apenas o método GET; OK
-● O servidor terá que ser capaz de retornar diversos tipos de arquivos (por ex: html, htm, css, js, png, jpg, svg...); ????
-● Ou seja, deverá conseguir manipular tanto arquivos de texto, quanto arquivos binários; ???
-● O servidor deverá ser capaz de transmitir arquivos de tamanho muito grande ????
-● Os requisitos mínimos (devem ser implementados obrigatoriamente) são o desenvolvimento das respostas com os códigos de resposta a seguir:
-            ○ 200 OK   OK
-                    ■ Requisição bem-sucedida, objeto requisitado será enviado OK
-            ○ 400 Bad Request OK
-                    ■ Mensagem de requisição não entendida pelo servidor, nesse caso o cliente escreveu a mensagem de requisição com algum erro de sintaxe OK
-            ○ 404 Not Found OK
-                    ■ Documento requisitado não localizado no servidor OK
-            ○ 505 HTTP Version Not Supported OK
-                    ■ Versão do HTTP utilizada não é suportada neste servidor OK
-● Com exceção do código 200, o servidor deverá enviar obrigatoriamente um arquivo html personalizado informando o respectivo erro; OK
-● Se a pasta requisitada não contiver um arquivo index.html ou index.htm, o servidor deverá criar uma página html para navegar pelas pastas, semelhante ao que ​apache​ faz
-(que navega nas pastas de forma semelhante ao windows explorer, nautilus e afins...); OK
-● O servidor Web deverá ler os arquivos de uma pasta específica, caso ela não exista, deverá ser criada automaticamente ao executar o servidor; OK
-● O uso de sockets TCP é obrigatório. OK"""
-
+"""Projeto 2: Servidor Web
+dft@cin.ufpe.br
+ycb@cin.ufpe.br
+"""
 
 from socket import socket, AF_INET, SOCK_STREAM
 import os
@@ -26,15 +9,10 @@ from datetime import *
 import time
 from mimetypes import guess_type
 
-#VERIFICAR SE OCORRER ERROS DE /favicon.ico
-#VERIFICAR SE OCORRER ERROS DE versao = colunas[2][5:8] linha 103 dando vazio depois de um tempo com o servidor rodando
-#EU VI NO DOS MENINOS QUE ELES COLOCARAM OS IF ANTES DE TUDO PARA PASSAR DESSES DOIS ERROS
-
 caminho_base = os.getcwd() 
 if not os.path.isdir(caminho_base+'\ProjetoTCP\pastaEspecifica'):
     os.mkdir(caminho_base+'\ProjetoTCP\pastaEspecifica')
 caminho_base = caminho_base+'\ProjetoTCP\pastaEspecifica'
-print(caminho_base)
 
 def mostraDiretorio(caminho_base,caminho_requisitado, caminho_requisitado_final):
     paginaHtml = f'''<!DOCTYPE html>
@@ -54,9 +32,9 @@ def mostraDiretorio(caminho_base,caminho_requisitado, caminho_requisitado_final)
         <th>Tamanho</th>
         </tr>
        '''
-    teste = os.listdir(caminho_requisitado_final)
-    print(teste)
-    for p in teste:
+    pegaArq = os.listdir(caminho_requisitado_final)
+   
+    for p in pegaArq:
                     arquivoPasta = os.path.join(caminho_requisitado_final, p)
                     arq =os.path.join(caminho_requisitado, p)
                     tamanho = os.path.getsize(arquivoPasta)
@@ -89,12 +67,8 @@ def mostraDiretorio(caminho_base,caminho_requisitado, caminho_requisitado_final)
 def atender_cliente(cliente_socket, cliente_endereco):
     global caminho_base
     dados_binarios = cliente_socket.recv(2048)
-
-    print('Mensagem recebida: ')
-
     mensagem_recebida = dados_binarios.decode()
-    print('msg recebida: ', mensagem_recebida)
-
+    #print('msg recebida: ', mensagem_recebida) verificar se é pra tirar
     print('\n\nDetalhamento da requisição:')
     linhas = mensagem_recebida.split('\n')
     primeira_linha = linhas[0].strip()
@@ -109,9 +83,8 @@ def atender_cliente(cliente_socket, cliente_endereco):
         print('caminho requisitado: ', caminho_requisitado)
         print('versao: ', versao)
         lista = caminho_requisitado.split('/')
-        print('Lista Caminho',lista)
         for x in lista:
-            caminho_requisitado_final = os.path.join(caminho_base, x) #Join para se livrar do problema das \ / (Win x Linux)
+            caminho_requisitado_final = os.path.join(caminho_base, x) 
             caminho_base = caminho_requisitado_final
         caminho_base = os.getcwd()
         caminho_base = caminho_base+'\ProjetoTCP\pastaEspecifica'
@@ -139,8 +112,8 @@ def atender_cliente(cliente_socket, cliente_endereco):
                         </body>
                         </html>''')
             mensagem_de_resposta = pagina
-
             cliente_socket.send(mensagem_de_resposta.encode())
+       
         elif  tipo_requisicao != 'GET':
             tempo = str(datetime.today().ctime())
             pagina =    ('HTTP/1.1 501 Not Implemented\r\n'
@@ -161,11 +134,9 @@ def atender_cliente(cliente_socket, cliente_endereco):
                         </body>
                         </html>''')
             mensagem_de_resposta  = pagina
-
             cliente_socket.send(mensagem_de_resposta.encode())
 
-        #ERRO 400 - PODE OCORRER DIFERENTES TIPO DE ERRO DE SINTAXE, COMO SABER?
-        elif caminho_requisitado[0] != "/":  #SERA QUE É ISSO??
+        elif caminho_requisitado[0] != "/": 
             tempo = str(datetime.today().ctime())
             pagina =    ('HTTP/1.1 400 Bad Request\r\n'
                         'Date: '+tempo+'\r\n'
@@ -185,8 +156,8 @@ def atender_cliente(cliente_socket, cliente_endereco):
                         </body>
                         </html>''')
             mensagem_de_resposta  = pagina
-
             cliente_socket.send(mensagem_de_resposta.encode())
+       
         elif not os.path.exists(caminho_requisitado_final):
             tempo = str(datetime.today().ctime())
             pagina =    ('HTTP/1.1 404 Not Found\r\n'
@@ -207,14 +178,13 @@ def atender_cliente(cliente_socket, cliente_endereco):
                         </body>
                         </html>''')
             mensagem_de_resposta  = pagina
-
             cliente_socket.send(mensagem_de_resposta.encode())
+     
         else:  
             if os.path.isdir(caminho_requisitado_final):
                 verificaHtml= os.path.join(caminho_requisitado_final, 'index.html')
                 verificaHtm= os.path.join(caminho_requisitado_final, 'index.htm')
-                if os.path.exists(verificaHtml):
-                    #REVER PARA VERIFICAR SE É A MELHOR FORMA DE PEGAR DATA, TIPO E TAMANHO
+                if os.path.exists(verificaHtml):                 
                     cabecalho = ('HTTP/1.1 200 OK\r\n'
                         f'Date: {os.path.getatime(caminho_requisitado_final)}\r\n'
                         'Server: YD-Server Win 10\r\n'
@@ -227,10 +197,9 @@ def atender_cliente(cliente_socket, cliente_endereco):
                     arq.close()
 
                     mensagem_de_resposta  = cabecalho.encode() + arquivo
-
                     cliente_socket.send(mensagem_de_resposta)   
+
                 elif os.path.exists(verificaHtm):
-                    #REVER PARA VERIFICAR SE É A MELHOR FORMA DE PEGAR DATA, TIPO E TAMANHO
                     cabecalho = ('HTTP/1.1 200 OK\r\n'
                         f'Date: {os.path.getatime(caminho_requisitado_final)}\r\n'
                         'Server: YD-Server Win 10\r\n'
@@ -243,9 +212,9 @@ def atender_cliente(cliente_socket, cliente_endereco):
                     arq.close()
 
                     mensagem_de_resposta  = cabecalho.encode() + arquivo
-
                     cliente_socket.send(mensagem_de_resposta)  
-                else: #AQUI ENTRA NO PASSEAR PELAS PASTAS
+
+                else:
                     cabecalho = ('HTTP/1.1 200 OK\r\n'
                         f'Date: {os.path.getatime(caminho_requisitado_final)}\r\n'
                         'Server: YD-Server Win 10\r\n'
@@ -259,7 +228,6 @@ def atender_cliente(cliente_socket, cliente_endereco):
                     cliente_socket.send(mensagem_de_resposta.encode())  
 
             else:
-                #REVER PARA VERIFICAR SE É A MELHOR FORMA DE PEGAR DATA, TIPO E TAMANHO
                 cabecalho = ('HTTP/1.1 200 OK\r\n'
                         f'Date: {os.path.getatime(caminho_requisitado_final)}\r\n'
                         'Server: YD-Server Win 10\r\n'
@@ -272,15 +240,11 @@ def atender_cliente(cliente_socket, cliente_endereco):
                 arq.close()
 
                 mensagem_de_resposta  = cabecalho.encode() + arquivo
-
                 cliente_socket.send(mensagem_de_resposta)   
                 
-
         cliente_socket.close()
 
-
 servidor_socket = socket(AF_INET, SOCK_STREAM)
-
 servidor_socket.bind(('localhost', 8081))
 
 print('Socket criado')
