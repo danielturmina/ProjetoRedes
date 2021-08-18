@@ -26,12 +26,10 @@ from datetime import *
 import time
 from mimetypes import guess_type
 
-#SE ARQUIVO TEM ESPACO OU ACENTO BUGA MAS ACHO QUE ISSO DA PARA PASSAR DE BOA
 #VERIFICAR SE OCORRER ERROS DE /favicon.ico
 #VERIFICAR SE OCORRER ERROS DE versao = colunas[2][5:8] linha 103 dando vazio depois de um tempo com o servidor rodando
 #EU VI NO DOS MENINOS QUE ELES COLOCARAM OS IF ANTES DE TUDO PARA PASSAR DESSES DOIS ERROS
 
-#AQUI SE livra do problema das \ / (Win x Linux)?
 caminho_base = os.getcwd() 
 if not os.path.isdir(caminho_base+'\ProjetoTCP\pastaEspecifica'):
     os.mkdir(caminho_base+'\ProjetoTCP\pastaEspecifica')
@@ -101,181 +99,184 @@ def atender_cliente(cliente_socket, cliente_endereco):
     linhas = mensagem_recebida.split('\n')
     primeira_linha = linhas[0].strip()
     colunas = primeira_linha.split(' ')
-    versao = colunas[2][5:8]
-    tipo_requisicao = colunas[0]
-    caminho_requisitado = colunas[1]
-    print('tipo de requisicao: ', tipo_requisicao)
-    print('caminho requisitado: ', caminho_requisitado)
-    print('versao: ', versao)
-    lista = caminho_requisitado.split('/')
-    print('Lista Caminho',lista)
-    for x in lista:
-        caminho_requisitado_final = os.path.join(caminho_base, x) #Join para se livrar do problema das \ / (Win x Linux)
-        caminho_base = caminho_requisitado_final
-    caminho_base = os.getcwd()
-    caminho_base = caminho_base+'\ProjetoTCP\pastaEspecifica'
-    print('Caminho Base: ',caminho_base)
-    print('Caminho Final: ',caminho_requisitado_final)
+    if len(mensagem_recebida) < 1 :
+        pass
+    else:
+        versao = colunas[2][5:8]
+        tipo_requisicao = colunas[0]
+        caminho_requisitado = colunas[1]
+        print('tipo de requisicao: ', tipo_requisicao)
+        print('caminho requisitado: ', caminho_requisitado)
+        print('versao: ', versao)
+        lista = caminho_requisitado.split('/')
+        print('Lista Caminho',lista)
+        for x in lista:
+            caminho_requisitado_final = os.path.join(caminho_base, x) #Join para se livrar do problema das \ / (Win x Linux)
+            caminho_base = caminho_requisitado_final
+        caminho_base = os.getcwd()
+        caminho_base = caminho_base+'\ProjetoTCP\pastaEspecifica'
+        print('Caminho Base: ',caminho_base)
+        print('Caminho Final: ',caminho_requisitado_final)
 
-    if versao != '1.0' and versao != '1.1':
-        tempo = str(datetime.today().ctime())
-        print(tempo)
-        pagina =    ('HTTP/1.1 505 HTTP Version Not Supported\r\n'
-                    'Date: '+tempo+'\r\n'
-                    'Server: YD-Server Win 10\r\n'
-                    'Content-Type: text/html\r\n'
-                    '\r\n')
-        pagina += ('''
-                    <!DOCTYPE html>
-                    <html lang="en">
-                    <head>
-                        <meta charset="UTF-8">
-                        <title>505 HTTP Version Not Supported</title>
-                    </head>
-                    <body>
-                        <h1>505 HTTP Version Not Supported</h1>
-                        <h2>Versão do HTTP utilizada não é suportada neste servidor<h2>
-                    </body>
-                    </html>''')
-        mensagem_de_resposta = pagina
+        if versao != '1.0' and versao != '1.1':
+            tempo = str(datetime.today().ctime())
+            print(tempo)
+            pagina =    ('HTTP/1.1 505 HTTP Version Not Supported\r\n'
+                        'Date: '+tempo+'\r\n'
+                        'Server: YD-Server Win 10\r\n'
+                        'Content-Type: text/html\r\n'
+                        '\r\n')
+            pagina += ('''
+                        <!DOCTYPE html>
+                        <html lang="en">
+                        <head>
+                            <meta charset="UTF-8">
+                            <title>505 HTTP Version Not Supported</title>
+                        </head>
+                        <body>
+                            <h1>505 HTTP Version Not Supported</h1>
+                            <h2>Versão do HTTP utilizada não é suportada neste servidor<h2>
+                        </body>
+                        </html>''')
+            mensagem_de_resposta = pagina
 
-        cliente_socket.send(mensagem_de_resposta.encode())
-    elif  tipo_requisicao != 'GET':
-        tempo = str(datetime.today().ctime())
-        pagina =    ('HTTP/1.1 501 Not Implemented\r\n'
-                    'Date: '+tempo+'\r\n'
-                    'Server: YD-Server Win 10\r\n'
-                    'Content-Type: text/html\r\n'
-                    '\r\n')
-        pagina += ('''
-                    <!DOCTYPE html>
-                    <html lang="en">
-                    <head>
-                        <meta charset="UTF-8">
-                        <title>501 Not Implemented</title>
-                    </head>
-                    <body>
-                        <h1>501 Not Implemented</h1>
-                        <h2>Tipo de requisição não implementado no servidor<h2>
-                    </body>
-                    </html>''')
-        mensagem_de_resposta  = pagina
+            cliente_socket.send(mensagem_de_resposta.encode())
+        elif  tipo_requisicao != 'GET':
+            tempo = str(datetime.today().ctime())
+            pagina =    ('HTTP/1.1 501 Not Implemented\r\n'
+                        'Date: '+tempo+'\r\n'
+                        'Server: YD-Server Win 10\r\n'
+                        'Content-Type: text/html\r\n'
+                        '\r\n')
+            pagina += ('''
+                        <!DOCTYPE html>
+                        <html lang="en">
+                        <head>
+                            <meta charset="UTF-8">
+                            <title>501 Not Implemented</title>
+                        </head>
+                        <body>
+                            <h1>501 Not Implemented</h1>
+                            <h2>Tipo de requisição não implementado no servidor<h2>
+                        </body>
+                        </html>''')
+            mensagem_de_resposta  = pagina
 
-        cliente_socket.send(mensagem_de_resposta.encode())
+            cliente_socket.send(mensagem_de_resposta.encode())
 
-    #ERRO 400 - PODE OCORRER DIFERENTES TIPO DE ERRO DE SINTAXE, COMO SABER?
-    elif caminho_requisitado[0] != "/":  #SERA QUE É ISSO??
-        tempo = str(datetime.today().ctime())
-        pagina =    ('HTTP/1.1 400 Bad Request\r\n'
-                    'Date: '+tempo+'\r\n'
-                    'Server: YD-Server Win 10\r\n'
-                    'Content-Type: text/html\r\n'
-                    '\r\n')
-        pagina += ('''
-                    <!DOCTYPE html>
-                    <html lang="en">
-                    <head>
-                        <meta charset="UTF-8">
-                        <title>400 Bad Request</title>
-                    </head>
-                    <body>
-                        <h1>400 Bad Request</h1>
-                        <h2>Mensagem de requisição não entendida pelo servidor<h2>
-                    </body>
-                    </html>''')
-        mensagem_de_resposta  = pagina
+        #ERRO 400 - PODE OCORRER DIFERENTES TIPO DE ERRO DE SINTAXE, COMO SABER?
+        elif caminho_requisitado[0] != "/":  #SERA QUE É ISSO??
+            tempo = str(datetime.today().ctime())
+            pagina =    ('HTTP/1.1 400 Bad Request\r\n'
+                        'Date: '+tempo+'\r\n'
+                        'Server: YD-Server Win 10\r\n'
+                        'Content-Type: text/html\r\n'
+                        '\r\n')
+            pagina += ('''
+                        <!DOCTYPE html>
+                        <html lang="en">
+                        <head>
+                            <meta charset="UTF-8">
+                            <title>400 Bad Request</title>
+                        </head>
+                        <body>
+                            <h1>400 Bad Request</h1>
+                            <h2>Mensagem de requisição não entendida pelo servidor<h2>
+                        </body>
+                        </html>''')
+            mensagem_de_resposta  = pagina
 
-        cliente_socket.send(mensagem_de_resposta.encode())
-    elif not os.path.exists(caminho_requisitado_final):
-        tempo = str(datetime.today().ctime())
-        pagina =    ('HTTP/1.1 404 Not Found\r\n'
-                    'Date: '+tempo+'\r\n'
-                    'Server: YD-Server Win 10\r\n'
-                    'Content-Type: text/html\r\n'
-                    '\r\n')
-        pagina += ('''
-                    <!DOCTYPE html>
-                    <html lang="en">
-                    <head>
-                        <meta charset="UTF-8">
-                        <title>404 Not Found</title>
-                    </head>
-                    <body>
-                        <h1>404 Not Found</h1>
-                        <h2>Documento requisitado não localizado no servidor<h2>
-                    </body>
-                    </html>''')
-        mensagem_de_resposta  = pagina
+            cliente_socket.send(mensagem_de_resposta.encode())
+        elif not os.path.exists(caminho_requisitado_final):
+            tempo = str(datetime.today().ctime())
+            pagina =    ('HTTP/1.1 404 Not Found\r\n'
+                        'Date: '+tempo+'\r\n'
+                        'Server: YD-Server Win 10\r\n'
+                        'Content-Type: text/html\r\n'
+                        '\r\n')
+            pagina += ('''
+                        <!DOCTYPE html>
+                        <html lang="en">
+                        <head>
+                            <meta charset="UTF-8">
+                            <title>404 Not Found</title>
+                        </head>
+                        <body>
+                            <h1>404 Not Found</h1>
+                            <h2>Documento requisitado não localizado no servidor<h2>
+                        </body>
+                        </html>''')
+            mensagem_de_resposta  = pagina
 
-        cliente_socket.send(mensagem_de_resposta.encode())
-    else:  
-        if os.path.isdir(caminho_requisitado_final):
-            verificaHtml= os.path.join(caminho_requisitado_final, 'index.html')
-            verificaHtm= os.path.join(caminho_requisitado_final, 'index.htm')
-            if os.path.exists(verificaHtml):
+            cliente_socket.send(mensagem_de_resposta.encode())
+        else:  
+            if os.path.isdir(caminho_requisitado_final):
+                verificaHtml= os.path.join(caminho_requisitado_final, 'index.html')
+                verificaHtm= os.path.join(caminho_requisitado_final, 'index.htm')
+                if os.path.exists(verificaHtml):
+                    #REVER PARA VERIFICAR SE É A MELHOR FORMA DE PEGAR DATA, TIPO E TAMANHO
+                    cabecalho = ('HTTP/1.1 200 OK\r\n'
+                        f'Date: {os.path.getatime(caminho_requisitado_final)}\r\n'
+                        'Server: YD-Server Win 10\r\n'
+                        f'Content-Type: {guess_type(caminho_requisitado_final)[0]}\r\n'
+                        f'Content-lenght: {os.path.getsize(caminho_requisitado_final)}\r\n'
+                        '\r\n')
+
+                    arq = open(verificaHtml, 'rb')
+                    arquivo = arq.read()
+                    arq.close()
+
+                    mensagem_de_resposta  = cabecalho.encode() + arquivo
+
+                    cliente_socket.send(mensagem_de_resposta)   
+                elif os.path.exists(verificaHtm):
+                    #REVER PARA VERIFICAR SE É A MELHOR FORMA DE PEGAR DATA, TIPO E TAMANHO
+                    cabecalho = ('HTTP/1.1 200 OK\r\n'
+                        f'Date: {os.path.getatime(caminho_requisitado_final)}\r\n'
+                        'Server: YD-Server Win 10\r\n'
+                        f'Content-Type: {guess_type(caminho_requisitado_final)[0]}\r\n'
+                        f'Content-lenght: {os.path.getsize(caminho_requisitado_final)}\r\n'
+                        '\r\n')
+
+                    arq = open(verificaHtml, 'rb')
+                    arquivo = arq.read()
+                    arq.close()
+
+                    mensagem_de_resposta  = cabecalho.encode() + arquivo
+
+                    cliente_socket.send(mensagem_de_resposta)  
+                else: #AQUI ENTRA NO PASSEAR PELAS PASTAS
+                    cabecalho = ('HTTP/1.1 200 OK\r\n'
+                        f'Date: {os.path.getatime(caminho_requisitado_final)}\r\n'
+                        'Server: YD-Server Win 10\r\n'
+                        f'Content-Type: {guess_type(caminho_requisitado_final)[0]}\r\n'
+                        f'Content-lenght: {os.path.getsize(caminho_requisitado_final)}\r\n'
+                        '\r\n')
+
+                    arquivo = mostraDiretorio(caminho_base,caminho_requisitado,caminho_requisitado_final)
+
+                    mensagem_de_resposta  = cabecalho + arquivo
+                    cliente_socket.send(mensagem_de_resposta.encode())  
+
+            else:
                 #REVER PARA VERIFICAR SE É A MELHOR FORMA DE PEGAR DATA, TIPO E TAMANHO
                 cabecalho = ('HTTP/1.1 200 OK\r\n'
-                    f'Date: {os.path.getatime(caminho_requisitado_final)}\r\n'
-                    'Server: YD-Server Win 10\r\n'
-                    f'Content-Type: {guess_type(caminho_requisitado_final)[0]}\r\n'
-                    f'Content-lenght: {os.path.getsize(caminho_requisitado_final)}\r\n'
-                    '\r\n')
+                        f'Date: {os.path.getatime(caminho_requisitado_final)}\r\n'
+                        'Server: YD-Server Win 10\r\n'
+                        f'Content-Type: {guess_type(caminho_requisitado_final)[0]}\r\n'
+                        f'Content-lenght: {os.path.getsize(caminho_requisitado_final)}\r\n'
+                        '\r\n')
 
-                arq = open(verificaHtml, 'rb')
+                arq = open(caminho_requisitado_final, 'rb')
                 arquivo = arq.read()
                 arq.close()
 
                 mensagem_de_resposta  = cabecalho.encode() + arquivo
 
                 cliente_socket.send(mensagem_de_resposta)   
-            elif os.path.exists(verificaHtm):
-                #REVER PARA VERIFICAR SE É A MELHOR FORMA DE PEGAR DATA, TIPO E TAMANHO
-                cabecalho = ('HTTP/1.1 200 OK\r\n'
-                    f'Date: {os.path.getatime(caminho_requisitado_final)}\r\n'
-                    'Server: YD-Server Win 10\r\n'
-                    f'Content-Type: {guess_type(caminho_requisitado_final)[0]}\r\n'
-                    f'Content-lenght: {os.path.getsize(caminho_requisitado_final)}\r\n'
-                    '\r\n')
+                
 
-                arq = open(verificaHtml, 'rb')
-                arquivo = arq.read()
-                arq.close()
-
-                mensagem_de_resposta  = cabecalho.encode() + arquivo
-
-                cliente_socket.send(mensagem_de_resposta)  
-            else: #AQUI ENTRA NO PASSEAR PELAS PASTAS
-                cabecalho = ('HTTP/1.1 200 OK\r\n'
-                    f'Date: {os.path.getatime(caminho_requisitado_final)}\r\n'
-                    'Server: YD-Server Win 10\r\n'
-                    f'Content-Type: {guess_type(caminho_requisitado_final)[0]}\r\n'
-                    f'Content-lenght: {os.path.getsize(caminho_requisitado_final)}\r\n'
-                    '\r\n')
-
-                arquivo = mostraDiretorio(caminho_base,caminho_requisitado,caminho_requisitado_final)
-
-                mensagem_de_resposta  = cabecalho + arquivo
-                cliente_socket.send(mensagem_de_resposta.encode())  
-
-        else:
-            #REVER PARA VERIFICAR SE É A MELHOR FORMA DE PEGAR DATA, TIPO E TAMANHO
-            cabecalho = ('HTTP/1.1 200 OK\r\n'
-                    f'Date: {os.path.getatime(caminho_requisitado_final)}\r\n'
-                    'Server: YD-Server Win 10\r\n'
-                    f'Content-Type: {guess_type(caminho_requisitado_final)[0]}\r\n'
-                    f'Content-lenght: {os.path.getsize(caminho_requisitado_final)}\r\n'
-                    '\r\n')
-
-            arq = open(caminho_requisitado_final, 'rb')
-            arquivo = arq.read()
-            arq.close()
-
-            mensagem_de_resposta  = cabecalho.encode() + arquivo
-
-            cliente_socket.send(mensagem_de_resposta)   
-            
-
-    cliente_socket.close()
+        cliente_socket.close()
 
 
 servidor_socket = socket(AF_INET, SOCK_STREAM)
